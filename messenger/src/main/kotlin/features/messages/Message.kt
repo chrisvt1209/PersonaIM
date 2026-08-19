@@ -1,9 +1,12 @@
-package dev.sirhcvt.features.messages
+package features.messages
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Message(
     val id: Long,
-    val senderId: Long,
     val conversationId: Long,
+    val senderId: Long,
     val text: String,
-    val sentAt: Long
+    val sentAt: String
 )

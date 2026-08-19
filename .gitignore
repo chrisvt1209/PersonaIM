@@ -115,3 +115,22 @@ fabric.properties
 .idea/**/azureSettings.xml
 
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains
+
+# Project-local JetBrains files
+**/.idea/
+*.iml
+*.ipr
+
+# Build output and local Gradle state
+**/build/
+**/.gradle/
+.gradle/
+
+# JVM/Kotlin generated files
+*.class
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+*.log
+**/.kotlin/

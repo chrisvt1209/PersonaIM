@@ -1,4 +1,4 @@
-package dev.sirhcvt.features.auth
+package features.auth
 
-interface AuthRepository {
+class AuthRepository {
 }

@@ -25,6 +25,12 @@ dependencies {
     implementation(ktorLibs.server.websockets)
     implementation(libs.logback.classic)
 
+    implementation("org.mindrot:jbcrypt:0.4")
+
+    implementation("org.ktorm:ktorm-core:4.1.1")
+    implementation("org.ktorm:ktorm-support-postgresql:4.1.1")
+    implementation("org.postgresql:postgresql:42.7.7")
+
     testImplementation(kotlin("test"))
     testImplementation(ktorLibs.server.testHost)
 }

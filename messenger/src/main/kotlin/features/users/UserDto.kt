@@ -1,2 +1,2 @@
-package dev.sirhcvt.features.users
+package features.users
 
