@@ -1,5 +1,6 @@
 package common
 
+import org.flywaydb.core.Flyway
 import org.ktorm.database.Database
 
 object DatabaseFactory {
@@ -14,6 +15,11 @@ object DatabaseFactory {
 
         val password = System.getenv("DATABASE_PASSWORD")
             ?: "postgres"
+
+        Flyway.configure()
+            .dataSource(jdbcUrl, username, password)
+            .load()
+            .migrate()
 
         database = Database.connect(
             url = jdbcUrl,

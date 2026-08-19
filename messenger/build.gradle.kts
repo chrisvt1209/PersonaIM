@@ -25,6 +25,9 @@ dependencies {
     implementation(ktorLibs.server.websockets)
     implementation(libs.logback.classic)
 
+    implementation("org.flywaydb:flyway-core:10.20.1")
+    implementation("org.flywaydb:flyway-database-postgresql:10.20.1")
+
     implementation("org.mindrot:jbcrypt:0.4")
 
     implementation("org.ktorm:ktorm-core:4.1.1")

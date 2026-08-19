@@ -2,6 +2,7 @@ package features.conversations
 
 import org.ktorm.database.Database
 import org.ktorm.dsl.*
+import org.ktorm.support.postgresql.defaultValue
 
 class ConversationRepository(
     private val database: Database
@@ -10,17 +11,9 @@ class ConversationRepository(
         user1: Long,
         user2: Long
     ): Conversation {
-        database.insert(Conversations) {
-            set(it.id, null)
-        }
-
-        val conversationId =
-            database
-                .from(Conversations)
-                .select(Conversations.id)
-                .orderBy(Conversations.id.desc())
-                .map { it[Conversations.id]!! }
-                .first()
+        val conversationId = database.insertAndGenerateKey(Conversations) {
+            set(it.createdAt, it.createdAt.defaultValue())
+        } as Long
 
         database.insert(ConversationParticipants) {
             set(it.conversationId, conversationId)
