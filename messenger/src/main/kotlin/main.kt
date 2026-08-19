@@ -1,4 +1,4 @@
-import common.DatabaseFactory
+import common.configureDependencyInjection
 import common.configureRouting
 import common.configureSecurity
 import common.configureSerialization
@@ -11,7 +11,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-    DatabaseFactory.initialize()
+    configureDependencyInjection()
     configureSerialization()
     configureSecurity()
     configureWebsockets()

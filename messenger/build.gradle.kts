@@ -15,6 +15,8 @@ kotlin {
     jvmToolchain(21)
 }
 dependencies {
+    implementation(platform("io.insert-koin:koin-bom:4.2.2"))
+
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(ktorLibs.server.auth)
     implementation(ktorLibs.server.auth.jwt)
@@ -27,6 +29,9 @@ dependencies {
 
     implementation("org.flywaydb:flyway-core:10.20.1")
     implementation("org.flywaydb:flyway-database-postgresql:10.20.1")
+
+    implementation("io.insert-koin:koin-ktor")
+    implementation("io.insert-koin:koin-logger-slf4j")
 
     implementation("org.mindrot:jbcrypt:0.4")
 
