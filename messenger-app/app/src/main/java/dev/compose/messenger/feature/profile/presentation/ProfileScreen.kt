@@ -81,7 +81,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            uiState.user?.let { user ->
+            if (uiState.user != null) {
                 Image(
                     painter = painterResource(R.drawable.ann), // Placeholder portrait
                     contentDescription = null,
@@ -103,18 +103,18 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = user.username,
+                        text = uiState.user.username,
                         color = Color.White,
                         fontFamily = OptimaNova,
                         fontSize = 28.sp
                     )
                     Text(
-                        text = user.email,
+                        text = uiState.user.email,
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 16.sp
                     )
                     
-                    user.bio?.let {
+                    uiState.user.bio?.let {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = it,
@@ -124,6 +124,13 @@ fun ProfileScreen(
                         )
                     }
                 }
+            } else {
+                Text(
+                    text = "Loading Profile...",
+                    color = Color.White,
+                    fontFamily = OptimaNova,
+                    fontSize = 20.sp
+                )
             }
 
             Spacer(modifier = Modifier.weight(1f))

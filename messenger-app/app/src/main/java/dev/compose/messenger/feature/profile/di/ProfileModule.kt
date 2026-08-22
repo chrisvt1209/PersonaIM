@@ -7,6 +7,6 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val profileModule = module {
-    single<ProfileRepository> { ProfileRepositoryImpl(get(), get()) }
-    viewModel { ProfileViewModel(get()) }
+    single<ProfileRepository> { ProfileRepositoryImpl(get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get()) }
 }

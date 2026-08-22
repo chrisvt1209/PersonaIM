@@ -1,5 +1,6 @@
 package dev.compose.messenger.feature.auth.data
 
+import dev.compose.messenger.core.database.MessengerDatabase
 import dev.compose.messenger.core.datastore.PreferencesManager
 import dev.compose.messenger.core.network.api.AuthApi
 import kotlinx.coroutines.delay
@@ -12,7 +13,8 @@ interface AuthRepository {
 
 class AuthRepositoryImpl(
     private val api: AuthApi,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val database: MessengerDatabase
 ) : AuthRepository {
     override suspend fun login(request: LoginRequest): Result<AuthResponse> {
         return try {
@@ -36,5 +38,6 @@ class AuthRepositoryImpl(
 
     override suspend fun logout() {
         preferencesManager.clear()
+        database.clearAllTables()
     }
 }

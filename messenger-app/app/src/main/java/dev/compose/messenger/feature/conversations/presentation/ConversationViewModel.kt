@@ -36,6 +36,11 @@ class ConversationViewModel(
             is ConversationEvent.Search -> {
                 // TODO: Implement search
             }
+            is ConversationEvent.CreateConversation -> {
+                viewModelScope.launch {
+                    repository.createConversation(event.userId)
+                }
+            }
         }
     }
 }
@@ -49,4 +54,5 @@ data class ConversationUiState(
 sealed interface ConversationEvent {
     data object Refresh : ConversationEvent
     data class Search(val query: String) : ConversationEvent
+    data class CreateConversation(val userId: Long) : ConversationEvent
 }

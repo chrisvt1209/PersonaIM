@@ -15,14 +15,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -51,18 +57,56 @@ fun ConversationListRoute(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    var showCreateDialog by remember { mutableStateOf(false) }
+
     ConversationListScreen(
         uiState = uiState,
         onConversationClick = onConversationClick,
-        onProfileClick = onProfileClick
+        onProfileClick = onProfileClick,
+        onAddClick = { showCreateDialog = true }
     )
+
+    if (showCreateDialog) {
+        var userIdText by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showCreateDialog = false },
+            title = { Text("Start Conversation") },
+            text = {
+                Column {
+                    Text("Enter User ID of the recipient:")
+                    OutlinedTextField(
+                        value = userIdText,
+                        onValueChange = { userIdText = it },
+                        label = { Text("User ID") }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val id = userIdText.toLongOrNull()
+                    if (id != null) {
+                        viewModel.onEvent(ConversationEvent.CreateConversation(id))
+                        showCreateDialog = false
+                    }
+                }) {
+                    Text("Create")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showCreateDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 fun ConversationListScreen(
     uiState: ConversationUiState,
     onConversationClick: (String) -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onAddClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -83,7 +127,10 @@ fun ConversationListScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            PersonaListHeader(onProfileClick = onProfileClick)
+            PersonaListHeader(
+                onProfileClick = onProfileClick,
+                onAddClick = onAddClick
+            )
 
             LazyColumn(
                 modifier = Modifier
@@ -107,7 +154,8 @@ fun ConversationListScreen(
 
 @Composable
 private fun PersonaListHeader(
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onAddClick: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -118,10 +166,11 @@ private fun PersonaListHeader(
     ) {
         Image(
             painter = painterResource(R.drawable.logo_im),
-            contentDescription = "Persona IM logo",
+            contentDescription = "New",
             modifier = Modifier
                 .height(100.dp)
                 .offset(x = 4.dp, y = (-4).dp)
+                .clickable { onAddClick() }
         )
 
         Column(
@@ -135,16 +184,17 @@ private fun PersonaListHeader(
                 color = Color.White,
                 fontFamily = OptimaNova,
                 fontSize = 26.sp,
+                modifier = Modifier.clickable { onProfileClick() }
             )
             Text(
-                text = "recent chatter | clean feed",
+                text = "tap logo to start chat",
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 13.sp,
             )
         }
 
         Image(
-            painter = painterResource(R.drawable.ann), // Using Ann as profile placeholder
+            painter = painterResource(R.drawable.ann),
             contentDescription = "Profile",
             modifier = Modifier
                 .padding(top = 8.dp)
@@ -226,9 +276,4 @@ private fun ConversationItem(
             modifier = Modifier.height(34.dp),
         )
     }
-}
-
-@Composable
-fun Spacer(modifier: Modifier) {
-    Box(modifier = modifier)
 }

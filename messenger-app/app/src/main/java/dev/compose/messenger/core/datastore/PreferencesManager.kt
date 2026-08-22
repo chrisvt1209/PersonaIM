@@ -13,13 +13,19 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 class PreferencesManager(private val context: Context) {
     private val tokenKey = stringPreferencesKey("auth_token")
+    private val currentUserIdKey = stringPreferencesKey("current_user_id")
     private val seasonKey = stringPreferencesKey("current_season")
 
     val authToken: Flow<String?> = context.dataStore.data.map { it[tokenKey] }
+    val currentUserId: Flow<Long?> = context.dataStore.data.map { it[currentUserIdKey]?.toLongOrNull() }
     val currentSeason: Flow<String?> = context.dataStore.data.map { it[seasonKey] }
 
     suspend fun saveAuthToken(token: String) {
         context.dataStore.edit { it[tokenKey] = token }
+    }
+
+    suspend fun saveCurrentUserId(userId: Long) {
+        context.dataStore.edit { it[currentUserIdKey] = userId.toString() }
     }
 
     suspend fun saveSeason(season: String) {
