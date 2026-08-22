@@ -53,52 +53,17 @@ import org.koin.androidx.compose.koinViewModel
 fun ConversationListRoute(
     onConversationClick: (String) -> Unit,
     onProfileClick: () -> Unit,
+    onAddClick: () -> Unit,
     viewModel: ConversationViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    var showCreateDialog by remember { mutableStateOf(false) }
 
     ConversationListScreen(
         uiState = uiState,
         onConversationClick = onConversationClick,
         onProfileClick = onProfileClick,
-        onAddClick = { showCreateDialog = true }
+        onAddClick = onAddClick
     )
-
-    if (showCreateDialog) {
-        var userIdText by remember { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { showCreateDialog = false },
-            title = { Text("Start Conversation") },
-            text = {
-                Column {
-                    Text("Enter User ID of the recipient:")
-                    OutlinedTextField(
-                        value = userIdText,
-                        onValueChange = { userIdText = it },
-                        label = { Text("User ID") }
-                    )
-                }
-            },
-            confirmButton = {
-                Button(onClick = {
-                    val id = userIdText.toLongOrNull()
-                    if (id != null) {
-                        viewModel.onEvent(ConversationEvent.CreateConversation(id))
-                        showCreateDialog = false
-                    }
-                }) {
-                    Text("Create")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showCreateDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
 }
 
 @Composable
@@ -166,7 +131,7 @@ private fun PersonaListHeader(
     ) {
         Image(
             painter = painterResource(R.drawable.logo_im),
-            contentDescription = "New",
+            contentDescription = "Friends",
             modifier = Modifier
                 .height(100.dp)
                 .offset(x = 4.dp, y = (-4).dp)
@@ -184,10 +149,9 @@ private fun PersonaListHeader(
                 color = Color.White,
                 fontFamily = OptimaNova,
                 fontSize = 26.sp,
-                modifier = Modifier.clickable { onProfileClick() }
             )
             Text(
-                text = "tap logo to start chat",
+                text = "tap logo for friends | clean feed",
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 13.sp,
             )

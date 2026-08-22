@@ -6,6 +6,8 @@ import features.auth.AuthService
 import features.auth.authRoutes
 import features.conversations.ConversationService
 import features.conversations.conversationRoutes
+import features.friends.FriendService
+import features.friends.friendRoutes
 import features.messages.MessageService
 import features.messages.messageRoutes
 import features.users.UserRepository
@@ -22,6 +24,7 @@ fun Application.configureRouting() {
     val messageService = get<MessageService>()
     val webSocketManager = get<WebSocketManager>()
     val authService = get<AuthService>()
+    val friendService = get<FriendService>()
 
     routing {
         get("/") {
@@ -44,6 +47,10 @@ fun Application.configureRouting() {
 
         messageRoutes(
             messageService
+        )
+
+        friendRoutes(
+            friendService
         )
 
         messageWebSocketRoutes(

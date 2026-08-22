@@ -6,8 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dev.compose.messenger.feature.auth.presentation.AuthRoute
-import dev.compose.messenger.feature.conversations.presentation.ConversationListRoute
 import dev.compose.messenger.feature.chat.presentation.ChatRoute
+import dev.compose.messenger.feature.conversations.presentation.ConversationListRoute
+import dev.compose.messenger.feature.friends.presentation.FriendListRoute
 import dev.compose.messenger.feature.profile.presentation.ProfileRoute
 
 @Composable
@@ -34,6 +35,22 @@ fun MessengerNavHost(
                 },
                 onProfileClick = {
                     navController.navigate("profile")
+                },
+                onAddClick = {
+                    navController.navigate("friends")
+                }
+            )
+        }
+        composable("friends") {
+            FriendListRoute(
+                onFriendClick = { friendId ->
+                    navController.navigate("conversations") {
+                        popUpTo("conversations") { inclusive = true }
+                    }
+                    // We could also immediately trigger a conversation creation here
+                },
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
         }
