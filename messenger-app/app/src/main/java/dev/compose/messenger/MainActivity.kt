@@ -51,7 +51,8 @@ class MainActivity : ComponentActivity() {
 
                     MessengerNavHost(
                         season = season,
-                        onSeasonChange = viewModel::changeSeason
+                        onSeasonChange = viewModel::changeSeason,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
             }

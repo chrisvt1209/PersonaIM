@@ -64,6 +64,17 @@ class ConversationRepository(
                 (ConversationParticipants.conversationId eq conversationId) and
                         (ConversationParticipants.userId eq userId)
             }
-            .totalRecordsInAllPages > 0
+            .map { 1 }
+            .isNotEmpty()
+    }
+
+    fun findForUser(userId: Long): List<Conversation> {
+        val conversationIds = database
+            .from(ConversationParticipants)
+            .select(ConversationParticipants.conversationId)
+            .where { ConversationParticipants.userId eq userId }
+            .map { it[ConversationParticipants.conversationId]!! }
+
+        return conversationIds.mapNotNull { findById(it) }
     }
 }

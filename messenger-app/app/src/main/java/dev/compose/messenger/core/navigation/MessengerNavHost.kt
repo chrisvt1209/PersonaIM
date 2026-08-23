@@ -1,6 +1,7 @@
 package dev.compose.messenger.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,11 +17,13 @@ import dev.compose.messenger.feature.profile.presentation.ProfileRoute
 fun MessengerNavHost(
     season: Season,
     onSeasonChange: (Season) -> Unit,
+    modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
-        startDestination = "auth"
+        startDestination = "auth",
+        modifier = modifier
     ) {
         composable("auth") {
             AuthRoute(

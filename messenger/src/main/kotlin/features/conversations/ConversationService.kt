@@ -23,6 +23,10 @@ class ConversationService(
         return repository.findById(conversationId)
     }
 
+    fun getForUser(userId: Long): List<Conversation> {
+        return repository.findForUser(userId)
+    }
+
     fun isParticipant(
         conversationId: Long,
         userId: Long

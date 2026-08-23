@@ -2,6 +2,8 @@ package features.messages
 
 import io.ktor.http.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -11,13 +13,9 @@ fun Route.messageRoutes(
     authenticate("auth-jwt") {
         route("/conversations/{conversationId}/messages") {
             get {
-                val userId =
-                    call.principal<UserIdPrincipal>()
-                        ?.name
-                        ?.toLong()
-                        ?: return@get call.respond(
-                            HttpStatusCode.Unauthorized
-                        )
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.subject?.toLongOrNull()
+                    ?: return@get call.respond(HttpStatusCode.Unauthorized)
 
                 val conversationId =
                     call.parameters["conversationId"]
@@ -34,6 +32,35 @@ fun Route.messageRoutes(
                         )
 
                     call.respond(messages)
+                } catch (e: IllegalArgumentException) {
+                    call.respond(
+                        HttpStatusCode.Forbidden,
+                        mapOf("error" to e.message)
+                    )
+                }
+            }
+
+            post {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.subject?.toLongOrNull()
+                    ?: return@post call.respond(HttpStatusCode.Unauthorized)
+
+                val conversationId =
+                    call.parameters["conversationId"]
+                        ?.toLongOrNull()
+                        ?: return@post call.respond(
+                            HttpStatusCode.BadRequest
+                        )
+
+                val request = call.receive<SendMessageRequest>()
+
+                try {
+                    val message = messageService.send(
+                        conversationId,
+                        userId,
+                        request.text
+                    )
+                    call.respond(HttpStatusCode.Created, message)
                 } catch (e: IllegalArgumentException) {
                     call.respond(
                         HttpStatusCode.Forbidden,

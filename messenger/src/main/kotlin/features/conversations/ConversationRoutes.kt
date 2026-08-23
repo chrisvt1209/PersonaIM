@@ -6,19 +6,26 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+import io.ktor.server.auth.jwt.*
+
 fun Route.conversationRoutes(
     service: ConversationService
 ) {
     authenticate("auth-jwt") {
         route("conversations") {
+            get {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.subject?.toLongOrNull()
+                    ?: return@get call.respond(HttpStatusCode.Unauthorized)
+
+                val conversations = service.getForUser(userId)
+                call.respond(conversations)
+            }
+
             post {
-                val userId =
-                    call.principal<UserIdPrincipal>()
-                        ?.name
-                        ?.toLong()
-                        ?: return@post call.respond(
-                            HttpStatusCode.Unauthorized
-                        )
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.subject?.toLongOrNull()
+                    ?: return@post call.respond(HttpStatusCode.Unauthorized)
 
                 val request =
                     call.receive<CreateConversationRequest>()
