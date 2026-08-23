@@ -27,14 +27,13 @@ import dev.compose.messenger.feature.chat.presentation.TranscriptSizes.MinLineWi
 import dev.compose.messenger.feature.chat.presentation.TranscriptSizes.RenMessageCenter
 import dev.compose.messenger.core.common.util.randomBetween
 import dev.compose.messenger.core.common.util.BetterEaseOutBack
-import dev.compose.messenger.core.common.util.AnimationDurationScale
-import dev.compose.messenger.core.common.model.Season
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun rememberTranscriptState(
@@ -191,7 +190,7 @@ class TranscriptState internal constructor(
             }
 
             coroutineScope.launch {
-                delay(160L)
+                delay(160L.milliseconds)
                 entryState.avatarForegroundScale.snapTo(0.8f)
                 entryState.avatarForegroundScale.animateTo(
                     targetValue = 1f,
@@ -223,7 +222,7 @@ class TranscriptState internal constructor(
             }
 
             coroutineScope.launch {
-                delay(100L)
+                delay(100L.milliseconds)
                 entryState.messageTextAlpha.animateTo(
                     targetValue = 1f,
                     animationSpec = tween(durationMillis = 130),
@@ -232,7 +231,7 @@ class TranscriptState internal constructor(
 
             if (message.text.endsWith('?')) {
                 coroutineScope.launch {
-                    delay(130L)
+                    delay(130L.milliseconds)
                     entryState.punctuationScale.snapTo(0.4f)
                     entryState.punctuationScale.animateTo(
                         targetValue = 1f,

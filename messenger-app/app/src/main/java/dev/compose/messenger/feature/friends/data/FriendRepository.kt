@@ -32,6 +32,7 @@ class FriendRepositoryImpl(
             dao.insertFriends(dtos.map { it.toEntity() })
             Result.success(Unit)
         } catch (e: Exception) {
+            e.printStackTrace()
             Result.failure(e)
         }
     }

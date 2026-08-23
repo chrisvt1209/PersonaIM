@@ -20,10 +20,21 @@ class ProfileViewModel(
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
+        sync()
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
             repository.getCurrentUser().collect { user ->
-                _uiState.update { it.copy(user = user, isLoading = false) }
+                if (user != null) {
+                    _uiState.update { it.copy(user = user, isLoading = false) }
+                }
+            }
+        }
+    }
+
+    fun sync() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            repository.syncProfile().onFailure { e ->
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
             }
         }
     }
@@ -37,5 +48,6 @@ class ProfileViewModel(
 
 data class ProfileUiState(
     val user: User? = null,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val error: String? = null
 )

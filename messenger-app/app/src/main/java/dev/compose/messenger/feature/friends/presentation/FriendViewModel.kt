@@ -19,8 +19,15 @@ class FriendViewModel(
     private val _uiState = MutableStateFlow(FriendUiState())
     val uiState: StateFlow<FriendUiState> = _uiState.asStateFlow()
 
+    private val _navigationEvent = MutableStateFlow<String?>(null)
+    val navigationEvent: StateFlow<String?> = _navigationEvent.asStateFlow()
+
     init {
         loadFriends()
+    }
+
+    fun onNavigationHandled() {
+        _navigationEvent.value = null
     }
 
     private fun loadFriends() {
@@ -49,7 +56,15 @@ class FriendViewModel(
             FriendEvent.Refresh -> loadFriends()
             is FriendEvent.StartChat -> {
                 viewModelScope.launch {
+                    _uiState.update { it.copy(isLoading = true) }
                     conversationRepository.createConversation(event.userId)
+                        .onSuccess { conversation ->
+                            _uiState.update { it.copy(isLoading = false) }
+                            _navigationEvent.value = "chat/${conversation.id}"
+                        }
+                        .onFailure { e ->
+                            _uiState.update { it.copy(isLoading = false, error = e.message) }
+                        }
                 }
             }
         }

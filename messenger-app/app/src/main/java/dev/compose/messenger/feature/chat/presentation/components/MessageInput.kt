@@ -21,14 +21,15 @@ fun MessageInput(
     draft: String,
     onDraftChange: (String) -> Unit,
     onSend: () -> Unit,
-    sendEnabled: Boolean
+    sendEnabled: Boolean,
+    modifier: Modifier = Modifier
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Row(
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .systemBarsPadding()
             .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 12.dp),

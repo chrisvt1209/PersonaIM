@@ -61,21 +61,8 @@ fun AuthScreen(
     onEvent: (AuthEvent) -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = PersonaRed)
+        modifier = Modifier.fillMaxSize()
     ) {
-        BackgroundParticles(Season.SPRING)
-
-        Image(
-            painter = painterResource(R.drawable.bg_splatter_background),
-            contentDescription = null,
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier
-                .statusBarsPadding()
-                .offset(y = (-16).dp)
-        )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()

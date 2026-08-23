@@ -21,11 +21,16 @@ import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 
+import dev.compose.messenger.core.common.model.Season
+import dev.compose.messenger.core.designsystem.component.SeasonMenu
+
 @Composable
 fun ChatTopBar(
     title: String,
     subtitle: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    season: Season,
+    onSeasonChange: (Season) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -34,13 +39,18 @@ fun ChatTopBar(
             .statusBarsPadding()
             .padding(start = 8.dp, top = 2.dp, end = 12.dp),
     ) {
-        Image(
-            painter = painterResource(R.drawable.logo_im),
-            contentDescription = "Back",
-            modifier = Modifier
-                .height(100.dp)
-                .offset(x = 4.dp, y = (-4).dp)
-                .clickable { onBackClick() }
+        SeasonMenu(
+            hostElement = {
+                Image(
+                    painter = painterResource(R.drawable.logo_im),
+                    contentDescription = "Back",
+                    modifier = Modifier
+                        .height(100.dp)
+                        .offset(x = 4.dp, y = (-4).dp)
+                )
+            },
+            onSeasonChange = onSeasonChange,
+            modifier = Modifier.clickable { onBackClick() }
         )
 
         Column(

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.onEach
 
 interface ConversationRepository {
     fun getConversations(): Flow<List<Conversation>>
-    suspend fun createConversation(userId: Long): Result<Unit>
+    suspend fun createConversation(userId: Long): Result<Conversation>
     suspend fun syncConversations(): Result<Unit>
 }
 
@@ -31,15 +31,17 @@ class ConversationRepositoryImpl(
             dao.insertConversations(dtos.map { it.toEntity() })
             Result.success(Unit)
         } catch (e: Exception) {
+            e.printStackTrace()
             Result.failure(e)
         }
     }
 
-    override suspend fun createConversation(userId: Long): Result<Unit> {
+    override suspend fun createConversation(userId: Long): Result<Conversation> {
         return try {
             val dto = api.createConversation(CreateConversationRequest(userId))
-            dao.insertConversations(listOf(dto.toEntity()))
-            Result.success(Unit)
+            val entity = dto.toEntity()
+            dao.insertConversations(listOf(entity))
+            Result.success(entity.toDomain())
         } catch (e: Exception) {
             Result.failure(e)
         }

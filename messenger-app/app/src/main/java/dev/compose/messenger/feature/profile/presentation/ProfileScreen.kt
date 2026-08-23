@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -58,21 +59,8 @@ fun ProfileScreen(
     onBackClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = PersonaRed)
+        modifier = Modifier.fillMaxSize()
     ) {
-        BackgroundParticles(Season.SPRING)
-
-        Image(
-            painter = painterResource(R.drawable.bg_splatter_background),
-            contentDescription = null,
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier
-                .statusBarsPadding()
-                .offset(y = (-16).dp)
-        )
-
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -81,14 +69,16 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            if (uiState.user != null) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(color = Color.White)
+            } else if (uiState.user != null) {
                 Image(
-                    painter = painterResource(R.drawable.ann), // Placeholder portrait
+                    painter = painterResource(R.drawable.ann),
                     contentDescription = null,
-                    modifier = Modifier.size(200.dp)
+                    modifier = Modifier.size(160.dp)
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Column(
                     modifier = Modifier
@@ -106,27 +96,32 @@ fun ProfileScreen(
                         text = uiState.user.username,
                         color = Color.White,
                         fontFamily = OptimaNova,
-                        fontSize = 28.sp
+                        fontSize = 24.sp
                     )
                     Text(
                         text = uiState.user.email,
                         color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 16.sp
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        text = "ID: ${uiState.user.id}",
+                        color = Color.White.copy(alpha = 0.5f),
+                        fontSize = 12.sp
                     )
                     
                     uiState.user.bio?.let {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = it,
                             color = Color.White,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
             } else {
                 Text(
-                    text = "Loading Profile...",
+                    text = uiState.error ?: "User not found",
                     color = Color.White,
                     fontFamily = OptimaNova,
                     fontSize = 20.sp

@@ -23,6 +23,7 @@ import dev.compose.messenger.core.common.util.randomBetween
 import dev.compose.messenger.core.common.util.randomPxBetween
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.random.Random
+import androidx.compose.ui.platform.LocalResources
 
 /**
  * Collection of portraits to show the current participants of the conversation.
@@ -31,7 +32,7 @@ import kotlin.random.Random
 fun Portraits(senders: ImmutableList<Sender>, modifier: Modifier = Modifier) {
     if (senders.isEmpty()) return
     val density = LocalDensity.current
-    val resources = LocalContext.current.resources
+    val resources = LocalResources.current
 
     val portraitDisplayModels = remember(senders, density, resources) {
         // Pick an index at random to have a "dark avatar", where black is rendered behind the

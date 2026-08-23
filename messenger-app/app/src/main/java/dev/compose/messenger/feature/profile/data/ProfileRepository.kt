@@ -8,7 +8,7 @@ import dev.compose.messenger.feature.profile.data.mapper.toEntity
 import dev.compose.messenger.feature.profile.domain.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -28,10 +28,7 @@ class ProfileRepositoryImpl(
     override fun getCurrentUser(): Flow<User?> {
         return preferencesManager.currentUserId.flatMapLatest { id ->
             if (id == null) {
-                flow {
-                    syncProfile()
-                    emit(null)
-                }
+                flowOf(null)
             } else {
                 dao.getUserById(id).map { it?.toDomain() }
             }

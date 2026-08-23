@@ -4,14 +4,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -30,18 +36,19 @@ import org.koin.core.parameter.parametersOf
 fun ChatRoute(
     conversationId: String,
     onBackClick: () -> Unit,
+    season: Season,
+    onSeasonChange: (Season) -> Unit,
     viewModel: ChatViewModel = koinViewModel { parametersOf(conversationId) }
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
-    // We need to fetch the conversation details for the header
-    // For now we'll pass the conversationId and assume the ViewModel or a separate state handles it
     
     ChatScreen(
         conversationId = conversationId,
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        season = season,
+        onSeasonChange = onSeasonChange
     )
 }
 
@@ -50,31 +57,22 @@ fun ChatScreen(
     conversationId: String,
     uiState: ChatUiState,
     onEvent: (ChatEvent) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    season: Season,
+    onSeasonChange: (Season) -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = PersonaRed)
+        modifier = Modifier.fillMaxSize()
     ) {
-        BackgroundParticles(Season.SPRING)
-
-        Image(
-            painter = painterResource(R.drawable.bg_splatter_background),
-            contentDescription = null,
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier
-                .statusBarsPadding()
-                .offset(y = (-16).dp)
-        )
-
         Column(
             modifier = Modifier.fillMaxSize(),
         ) {
             ChatTopBar(
                 title = "Chat", // TODO: Get from conversation state
                 subtitle = "active now",
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                season = season,
+                onSeasonChange = onSeasonChange
             )
 
             Box(
@@ -82,6 +80,13 @@ fun ChatScreen(
                     .weight(1f)
                     .fillMaxWidth(),
             ) {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.White
+                    )
+                }
+
                 val transcriptState = rememberTranscriptState(
                     conversationKey = conversationId,
                     messages = uiState.messages
@@ -94,11 +99,14 @@ fun ChatScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             MessageInput(
                 draft = uiState.draft,
                 onDraftChange = { onEvent(ChatEvent.DraftChanged(it)) },
                 onSend = { onEvent(ChatEvent.SendClicked) },
-                sendEnabled = uiState.draft.isNotBlank()
+                sendEnabled = uiState.draft.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
