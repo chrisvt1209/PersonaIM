@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,18 +43,13 @@ fun ChatTopBar(
             .statusBarsPadding()
             .padding(start = 8.dp, top = 2.dp, end = 12.dp),
     ) {
-        SeasonMenu(
-            hostElement = {
-                Image(
-                    painter = painterResource(R.drawable.logo_im),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .height(100.dp)
-                        .offset(x = 4.dp, y = (-4).dp)
-                )
-            },
-            onSeasonChange = onSeasonChange,
-            modifier = Modifier.clickable { onBackClick() }
+        Image(
+            painter = painterResource(R.drawable.logo_im),
+            contentDescription = "Home",
+            modifier = Modifier
+                .height(100.dp)
+                .offset(x = 4.dp, y = (-4).dp)
+                .clickable { onBackClick() }
         )
 
         Column(
@@ -71,5 +70,17 @@ fun ChatTopBar(
                 fontSize = 13.sp,
             )
         }
+
+        SeasonMenu(
+            hostElement = {
+                Icon(
+                    imageVector = Icons.Default.Palette,
+                    contentDescription = "Change Season",
+                    tint = Color.White,
+                    modifier = Modifier.padding(top = 12.dp).size(28.dp)
+                )
+            },
+            onSeasonChange = onSeasonChange
+        )
     }
 }

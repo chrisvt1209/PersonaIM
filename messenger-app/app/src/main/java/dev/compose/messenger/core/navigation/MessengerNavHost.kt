@@ -80,7 +80,9 @@ fun MessengerNavHost(
                 },
                 onBackClick = {
                     navController.popBackStack()
-                }
+                },
+                season = season,
+                onSeasonChange = onSeasonChange
             )
         }
     }

@@ -15,10 +15,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -133,18 +139,12 @@ private fun PersonaListHeader(
             .statusBarsPadding()
             .padding(start = 8.dp, top = 2.dp, end = 12.dp),
     ) {
-        SeasonMenu(
-            hostElement = {
-                Image(
-                    painter = painterResource(R.drawable.logo_im),
-                    contentDescription = "Friends",
-                    modifier = Modifier
-                        .height(100.dp)
-                        .offset(x = 4.dp, y = (-4).dp)
-                )
-            },
-            onSeasonChange = onSeasonChange,
-            modifier = Modifier.clickable { onAddClick() }
+        Image(
+            painter = painterResource(R.drawable.logo_im),
+            contentDescription = "Home",
+            modifier = Modifier
+                .height(100.dp)
+                .offset(x = 4.dp, y = (-4).dp)
         )
 
         Column(
@@ -166,14 +166,39 @@ private fun PersonaListHeader(
             )
         }
 
-        Image(
-            painter = painterResource(R.drawable.ann),
-            contentDescription = "Profile",
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .height(80.dp)
-                .clickable { onProfileClick() }
-        )
+        Row(
+            modifier = Modifier.padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SeasonMenu(
+                hostElement = {
+                    Icon(
+                        imageVector = Icons.Default.Palette,
+                        contentDescription = "Change Season",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp).padding(4.dp)
+                    )
+                },
+                onSeasonChange = onSeasonChange
+            )
+
+            IconButton(onClick = onAddClick) {
+                Icon(
+                    imageVector = Icons.Default.Group,
+                    contentDescription = "Friends",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            Image(
+                painter = painterResource(R.drawable.ann),
+                contentDescription = "Profile",
+                modifier = Modifier
+                    .height(60.dp)
+                    .clickable { onProfileClick() }
+            )
+        }
     }
 }
 

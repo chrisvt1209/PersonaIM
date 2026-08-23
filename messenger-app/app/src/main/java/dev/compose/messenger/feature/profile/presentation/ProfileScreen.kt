@@ -37,10 +37,17 @@ import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
 import org.koin.androidx.compose.koinViewModel
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material3.Icon
+import dev.compose.messenger.core.designsystem.component.SeasonMenu
+
 @Composable
 fun ProfileRoute(
     onLogout: () -> Unit,
     onBackClick: () -> Unit,
+    season: Season,
+    onSeasonChange: (Season) -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -48,7 +55,9 @@ fun ProfileRoute(
     ProfileScreen(
         uiState = uiState,
         onLogout = onLogout,
-        onBackClick = onBackClick
+        onBackClick = onBackClick,
+        season = season,
+        onSeasonChange = onSeasonChange
     )
 }
 
@@ -56,7 +65,9 @@ fun ProfileRoute(
 fun ProfileScreen(
     uiState: ProfileUiState,
     onLogout: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    season: Season,
+    onSeasonChange: (Season) -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -65,7 +76,11 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ProfileHeader(onBackClick = onBackClick)
+            ProfileHeader(
+                onBackClick = onBackClick,
+                season = season,
+                onSeasonChange = onSeasonChange
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -145,7 +160,9 @@ fun ProfileScreen(
 
 @Composable
 private fun ProfileHeader(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    season: Season,
+    onSeasonChange: (Season) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -156,7 +173,7 @@ private fun ProfileHeader(
     ) {
         Image(
             painter = painterResource(R.drawable.logo_im),
-            contentDescription = "Back",
+            contentDescription = "Home",
             modifier = Modifier
                 .height(100.dp)
                 .offset(x = 4.dp, y = (-4).dp)
@@ -181,5 +198,17 @@ private fun ProfileHeader(
                 fontSize = 13.sp,
             )
         }
+
+        SeasonMenu(
+            hostElement = {
+                Icon(
+                    imageVector = Icons.Default.Palette,
+                    contentDescription = "Change Season",
+                    tint = Color.White,
+                    modifier = Modifier.padding(top = 12.dp).size(28.dp)
+                )
+            },
+            onSeasonChange = onSeasonChange
+        )
     }
 }

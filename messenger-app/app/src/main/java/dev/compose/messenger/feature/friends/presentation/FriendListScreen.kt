@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -121,7 +122,7 @@ fun FriendListScreen(
             ) {
                 FriendHeader(
                     onBackClick = onBackClick,
-                    onAddClick = onAddClick,
+                    onAddFriendClick = onAddClick,
                     season = season,
                     onSeasonChange = onSeasonChange
                 )
@@ -161,7 +162,7 @@ fun FriendListScreen(
 @Composable
 private fun FriendHeader(
     onBackClick: () -> Unit,
-    onAddClick: () -> Unit,
+    onAddFriendClick: () -> Unit,
     season: Season,
     onSeasonChange: (Season) -> Unit
 ) {
@@ -172,18 +173,13 @@ private fun FriendHeader(
             .statusBarsPadding()
             .padding(start = 8.dp, top = 2.dp, end = 12.dp),
     ) {
-        SeasonMenu(
-            hostElement = {
-                Image(
-                    painter = painterResource(R.drawable.logo_im),
-                    contentDescription = "Back",
-                    modifier = Modifier
-                        .height(100.dp)
-                        .offset(x = 4.dp, y = (-4).dp)
-                )
-            },
-            onSeasonChange = onSeasonChange,
-            modifier = Modifier.clickable { onBackClick() }
+        Image(
+            painter = painterResource(R.drawable.logo_im),
+            contentDescription = "Home",
+            modifier = Modifier
+                .height(100.dp)
+                .offset(x = 4.dp, y = (-4).dp)
+                .clickable { onBackClick() }
         )
 
         Column(
@@ -205,13 +201,27 @@ private fun FriendHeader(
             )
         }
 
-        IconButton(onClick = onAddClick, modifier = Modifier.padding(top = 8.dp)) {
-            Icon(
-                imageVector = Icons.Default.PersonAdd,
-                contentDescription = "Add Friend",
-                tint = Color.White,
-                modifier = Modifier.size(40.dp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SeasonMenu(
+                hostElement = {
+                    Icon(
+                        imageVector = Icons.Default.Palette,
+                        contentDescription = "Change Season",
+                        tint = Color.White,
+                        modifier = Modifier.padding(top = 12.dp).size(28.dp)
+                    )
+                },
+                onSeasonChange = onSeasonChange
             )
+
+            IconButton(onClick = onAddFriendClick, modifier = Modifier.padding(top = 8.dp)) {
+                Icon(
+                    imageVector = Icons.Default.PersonAdd,
+                    contentDescription = "Add Friend",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }
