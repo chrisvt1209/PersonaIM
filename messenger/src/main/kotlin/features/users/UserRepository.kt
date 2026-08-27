@@ -16,7 +16,8 @@ class UserRepository(
                     id = it[Users.id]!!,
                     username = it[Users.username]!!,
                     email = it[Users.email]!!,
-                    uid = it[Users.uid]!!
+                    uid = it[Users.uid]!!,
+                    avatar = it[Users.avatar]!!
                 )
             }
             .firstOrNull()
@@ -32,7 +33,8 @@ class UserRepository(
                     id = it[Users.id]!!,
                     username = it[Users.username]!!,
                     email = it[Users.email]!!,
-                    uid = it[Users.uid]!!
+                    uid = it[Users.uid]!!,
+                    avatar = it[Users.avatar]!!
                 )
             }
             .firstOrNull()
@@ -48,7 +50,8 @@ class UserRepository(
                     id = it[Users.id]!!,
                     username = it[Users.username]!!,
                     email = it[Users.email]!!,
-                    uid = it[Users.uid]!!
+                    uid = it[Users.uid]!!,
+                    avatar = it[Users.avatar]!!
                 )
             }
             .firstOrNull()
@@ -75,11 +78,43 @@ class UserRepository(
             .first()
     }
 
+    fun updateProfile(
+        userId: Long,
+        username: String,
+        email: String,
+        avatar: String
+    ): User? {
+        database.update(Users) {
+            set(it.username, username)
+            set(it.email, email)
+            set(it.avatar, avatar)
+            where { it.id eq userId }
+        }
+
+        return findById(userId)
+    }
+
+    fun updatePasswordHash(userId: Long, passwordHash: String) {
+        database.update(Users) {
+            set(it.passwordHash, passwordHash)
+            where { it.id eq userId }
+        }
+    }
+
     fun getPasswordHash(email: String): String? {
         return database
             .from(Users)
             .select(Users.passwordHash)
             .where { Users.email eq email }
+            .map { it[Users.passwordHash]!! }
+            .firstOrNull()
+    }
+
+    fun getPasswordHashById(userId: Long): String? {
+        return database
+            .from(Users)
+            .select(Users.passwordHash)
+            .where { Users.id eq userId }
             .map { it[Users.passwordHash]!! }
             .firstOrNull()
     }

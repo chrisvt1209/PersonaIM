@@ -9,6 +9,7 @@ import features.friends.FriendService
 import features.messages.MessageRepository
 import features.messages.MessageService
 import features.users.UserRepository
+import features.users.UserService
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import org.koin.core.qualifier.named
@@ -27,6 +28,7 @@ private val appModule = module {
     }
 
     single { UserRepository(get()) }
+    single { UserService(get()) }
     single { ConversationRepository(get()) }
     single { ConversationService(get()) }
     single { MessageRepository(get()) }

@@ -9,8 +9,8 @@ fun UserDto.toEntity() = UserEntity(
     username = username,
     email = email,
     uid = uid,
-    bio = bio,
-    avatarUrl = avatarUrl
+    avatar = avatar,
+    bio = bio
 )
 
 fun UserEntity.toDomain() = User(
@@ -18,6 +18,6 @@ fun UserEntity.toDomain() = User(
     username = username,
     email = email,
     uid = uid,
-    bio = bio,
-    avatarUrl = avatarUrl
+    avatar = avatar,
+    bio = bio
 )

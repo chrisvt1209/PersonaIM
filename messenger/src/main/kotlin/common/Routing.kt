@@ -11,6 +11,7 @@ import features.friends.friendRoutes
 import features.messages.MessageService
 import features.messages.messageRoutes
 import features.users.UserRepository
+import features.users.UserService
 import features.users.userRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -20,6 +21,7 @@ import org.koin.ktor.ext.get
 fun Application.configureRouting() {
 
     val userRepository = get<UserRepository>()
+    val userService = get<UserService>()
     val conversationService = get<ConversationService>()
     val messageService = get<MessageService>()
     val webSocketManager = get<WebSocketManager>()
@@ -39,7 +41,7 @@ fun Application.configureRouting() {
 
         authRoutes(authService)
 
-        userRoutes(userRepository)
+        userRoutes(userRepository, userService)
 
         conversationRoutes(
             conversationService

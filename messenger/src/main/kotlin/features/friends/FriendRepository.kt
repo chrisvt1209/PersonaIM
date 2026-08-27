@@ -20,14 +20,15 @@ class FriendRepository(private val database: Database) {
         return database
             .from(Friends)
             .innerJoin(Users, on = Friends.friendId eq Users.id)
-            .select(Users.id, Users.username, Users.email)
+            .select(Users.id, Users.username, Users.email, Users.uid, Users.avatar)
             .where { Friends.userId eq userId }
             .map {
                 User(
                     id = it[Users.id]!!,
                     username = it[Users.username]!!,
                     email = it[Users.email]!!,
-                    uid = it[Users.uid]!!
+                    uid = it[Users.uid]!!,
+                    avatar = it[Users.avatar]!!
                 )
             }
     }

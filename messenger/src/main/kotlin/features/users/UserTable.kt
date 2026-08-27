@@ -10,6 +10,7 @@ object Users : Table<Nothing>("users") {
     val username = varchar("username")
     val email = varchar("email")
     val uid = varchar("uid")
+    val avatar = varchar("avatar")
     val passwordHash = varchar("password_hash")
     val createdAt = timestamp("created_at")
 }
