@@ -32,7 +32,7 @@ fun Route.friendRoutes(
                 if (userId != null) {
                     try {
                         val request = call.receive<AddFriendRequest>()
-                        val response = friendService.addFriend(userId, request.friendEmail)
+                        val response = friendService.addFriend(userId, request.friendUid)
                         call.respond(HttpStatusCode.Created, response)
                     } catch (e: IllegalArgumentException) {
                         call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))

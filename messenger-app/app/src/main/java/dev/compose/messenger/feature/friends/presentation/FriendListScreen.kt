@@ -57,25 +57,25 @@ fun FriendListRoute(
     )
 
     if (showAddDialog) {
-        var emailText by remember { mutableStateOf("") }
+        var uidText by remember { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
             title = { Text("Add Friend") },
             text = {
                 Column {
-                    Text("Enter friend's email address:")
+                    Text("Enter friend's UID:")
                     OutlinedTextField(
-                        value = emailText,
-                        onValueChange = { emailText = it },
-                        label = { Text("Email") },
+                        value = uidText,
+                        onValueChange = { uidText = it },
+                        label = { Text("UID") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             },
             confirmButton = {
                 Button(onClick = {
-                    if (emailText.isNotBlank()) {
-                        viewModel.onEvent(FriendEvent.AddFriend(emailText))
+                    if (uidText.isNotBlank()) {
+                        viewModel.onEvent(FriendEvent.AddFriend(uidText))
                         showAddDialog = false
                     }
                 }) {

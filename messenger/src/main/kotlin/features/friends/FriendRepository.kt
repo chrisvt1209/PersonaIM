@@ -26,7 +26,8 @@ class FriendRepository(private val database: Database) {
                 User(
                     id = it[Users.id]!!,
                     username = it[Users.username]!!,
-                    email = it[Users.email]!!
+                    email = it[Users.email]!!,
+                    uid = it[Users.uid]!!
                 )
             }
     }

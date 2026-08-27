@@ -6,9 +6,9 @@ class FriendService(
     private val friendRepository: FriendRepository,
     private val userRepository: UserRepository
 ) {
-    fun addFriend(userId: Long, friendEmail: String): FriendResponse {
-        val friend = userRepository.findByEmail(friendEmail)
-            ?: throw IllegalArgumentException("User with email $friendEmail not found")
+    fun addFriend(userId: Long, friendUid: String): FriendResponse {
+        val friend = userRepository.findByUid(friendUid)
+            ?: throw IllegalArgumentException("User with UID $friendUid not found")
 
         if (friend.id == userId) {
             throw IllegalArgumentException("You cannot add yourself as a friend")

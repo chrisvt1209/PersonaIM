@@ -119,7 +119,7 @@ fun ProfileScreen(
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "ID: ${uiState.user.id}",
+                        text = "UID: ${uiState.user.uid}",
                         color = Color.White.copy(alpha = 0.5f),
                         fontSize = 12.sp
                     )

@@ -15,7 +15,8 @@ class UserRepository(
                 User(
                     id = it[Users.id]!!,
                     username = it[Users.username]!!,
-                    email = it[Users.email]!!
+                    email = it[Users.email]!!,
+                    uid = it[Users.uid]!!
                 )
             }
             .firstOrNull()
@@ -30,7 +31,24 @@ class UserRepository(
                 User(
                     id = it[Users.id]!!,
                     username = it[Users.username]!!,
-                    email = it[Users.email]!!
+                    email = it[Users.email]!!,
+                    uid = it[Users.uid]!!
+                )
+            }
+            .firstOrNull()
+    }
+
+    fun findByUid(uid: String): User? {
+        return database
+            .from(Users)
+            .select()
+            .where { Users.uid eq uid }
+            .map {
+                User(
+                    id = it[Users.id]!!,
+                    username = it[Users.username]!!,
+                    email = it[Users.email]!!,
+                    uid = it[Users.uid]!!
                 )
             }
             .firstOrNull()
@@ -39,12 +57,14 @@ class UserRepository(
     fun create(
         username: String,
         email: String,
-        passwordHash: String
+        passwordHash: String,
+        uid: String
     ): Long {
         database.insert(Users) {
             set(it.username, username)
             set(it.email, email)
             set(it.passwordHash, passwordHash)
+            set(it.uid, uid)
         }
 
         return database

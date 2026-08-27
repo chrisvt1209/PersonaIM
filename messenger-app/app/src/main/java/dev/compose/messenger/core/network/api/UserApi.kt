@@ -11,6 +11,7 @@ data class UserDto(
     val id: Long,
     val username: String,
     val email: String,
+    val uid: String,
     val bio: String? = null,
     val avatarUrl: String? = null
 )

@@ -9,6 +9,7 @@ object Users : Table<Nothing>("users") {
     val id = long("id").primaryKey()
     val username = varchar("username")
     val email = varchar("email")
+    val uid = varchar("uid")
     val passwordHash = varchar("password_hash")
     val createdAt = timestamp("created_at")
 }

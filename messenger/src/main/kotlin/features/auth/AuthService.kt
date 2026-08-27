@@ -25,10 +25,24 @@ class AuthService(
         val userId = userRepository.create(
             username = request.username,
             email = request.email,
-            passwordHash = passwordHash
+            passwordHash = passwordHash,
+            uid = generateUniqueUid()
         )
 
         return AuthResponse(token = generateToken(userId))
+    }
+
+    private fun generateUniqueUid(): String {
+        var uid: String
+        do {
+            uid = generateUid()
+        } while (userRepository.findByUid(uid) != null)
+        return uid
+    }
+
+    private fun generateUid(): String {
+        val chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+        return (1..8).map { chars.random() }.joinToString("")
     }
 
     fun login(request: LoginRequest): AuthResponse {

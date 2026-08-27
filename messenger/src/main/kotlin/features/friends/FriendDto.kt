@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AddFriendRequest(
-    val friendEmail: String
+    val friendUid: String
 )
 
 @Serializable

@@ -44,7 +44,7 @@ fun createHttpClient(preferencesManager: PreferencesManager): HttpClient {
         }
 
         install(Logging) {
-            level = LogLevel.BODY
+            level = LogLevel.INFO
         }
 
         install(WebSockets)

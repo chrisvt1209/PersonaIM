@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.onEach
 
 interface FriendRepository {
     fun getFriends(): Flow<List<Friend>>
-    suspend fun addFriend(email: String): Result<Unit>
+    suspend fun addFriend(uid: String): Result<Unit>
     suspend fun syncFriends(): Result<Unit>
 }
 
@@ -37,9 +37,9 @@ class FriendRepositoryImpl(
         }
     }
 
-    override suspend fun addFriend(email: String): Result<Unit> {
+    override suspend fun addFriend(uid: String): Result<Unit> {
         return try {
-            val dto = api.addFriend(AddFriendRequest(email))
+            val dto = api.addFriend(AddFriendRequest(uid))
             dao.insertFriend(dto.toEntity())
             Result.success(Unit)
         } catch (e: Exception) {

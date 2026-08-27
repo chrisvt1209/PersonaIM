@@ -44,7 +44,7 @@ class FriendViewModel(
             is FriendEvent.AddFriend -> {
                 viewModelScope.launch {
                     _uiState.update { it.copy(isLoading = true, error = null) }
-                    repository.addFriend(event.email)
+                    repository.addFriend(event.uid)
                         .onSuccess {
                             _uiState.update { it.copy(isLoading = false) }
                         }
@@ -78,7 +78,7 @@ data class FriendUiState(
 )
 
 sealed interface FriendEvent {
-    data class AddFriend(val email: String) : FriendEvent
+    data class AddFriend(val uid: String) : FriendEvent
     data object Refresh : FriendEvent
     data class StartChat(val userId: Long) : FriendEvent
 }
