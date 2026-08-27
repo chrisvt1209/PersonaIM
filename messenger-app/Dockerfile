@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
 
 # Set environment variables
 ENV ANDROID_HOME /opt/android-sdk
+ENV ANDROID_SDK_ROOT ${ANDROID_HOME}
 ENV PATH ${PATH}:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools
 
 # Download and install Android Command Line Tools
@@ -24,7 +25,7 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
 RUN yes | sdkmanager --licenses
 
 # Install required Android SDK components
-RUN sdkmanager "platform-tools" "platforms;android-37" "build-tools;35.0.0"
+RUN sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"
 
 # Copy root project files first for better caching
 COPY gradlew .
