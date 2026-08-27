@@ -17,4 +17,7 @@ interface ConversationDao {
 
     @Query("DELETE FROM conversations")
     suspend fun clearAll()
+
+    @Query("DELETE FROM conversations WHERE id = :id")
+    suspend fun deleteConversation(id: Long)
 }

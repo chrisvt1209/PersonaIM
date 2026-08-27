@@ -41,6 +41,11 @@ class ConversationViewModel(
                     repository.createConversation(event.userId)
                 }
             }
+            is ConversationEvent.DeleteConversation -> {
+                viewModelScope.launch {
+                    repository.deleteConversation(event.conversationId)
+                }
+            }
         }
     }
 }
@@ -55,4 +60,5 @@ sealed interface ConversationEvent {
     data object Refresh : ConversationEvent
     data class Search(val query: String) : ConversationEvent
     data class CreateConversation(val userId: Long) : ConversationEvent
+    data class DeleteConversation(val conversationId: String) : ConversationEvent
 }

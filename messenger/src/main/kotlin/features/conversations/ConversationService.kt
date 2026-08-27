@@ -11,6 +11,8 @@ class ConversationService(
             "You cannot create a conversation with yourself"
         }
 
+        repository.findBetween(userId, otherUserId)?.let { return it }
+
         return repository.create(
             user1 = userId,
             user2 = otherUserId
@@ -35,5 +37,13 @@ class ConversationService(
             conversationId,
             userId
         )
+    }
+
+    fun delete(conversationId: Long, userId: Long) {
+        if (!isParticipant(conversationId, userId)) {
+            throw IllegalArgumentException("Conversation not found")
+        }
+
+        repository.delete(conversationId)
     }
 }

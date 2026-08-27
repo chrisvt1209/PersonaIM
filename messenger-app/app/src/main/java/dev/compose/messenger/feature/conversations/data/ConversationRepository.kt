@@ -1,6 +1,7 @@
 package dev.compose.messenger.feature.conversations.data
 
 import dev.compose.messenger.core.database.dao.ConversationDao
+import dev.compose.messenger.core.database.dao.MessageDao
 import dev.compose.messenger.core.network.api.ConversationApi
 import dev.compose.messenger.feature.conversations.data.mapper.toDomain
 import dev.compose.messenger.feature.conversations.data.mapper.toEntity
@@ -13,11 +14,13 @@ interface ConversationRepository {
     fun getConversations(): Flow<List<Conversation>>
     suspend fun createConversation(userId: Long): Result<Conversation>
     suspend fun syncConversations(): Result<Unit>
+    suspend fun deleteConversation(id: String): Result<Unit>
 }
 
 class ConversationRepositoryImpl(
     private val api: ConversationApi,
-    private val dao: ConversationDao
+    private val dao: ConversationDao,
+    private val messageDao: MessageDao
 ) : ConversationRepository {
     override fun getConversations(): Flow<List<Conversation>> {
         return dao.getAllConversations()
@@ -42,6 +45,18 @@ class ConversationRepositoryImpl(
             val entity = dto.toEntity()
             dao.insertConversations(listOf(entity))
             Result.success(entity.toDomain())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteConversation(id: String): Result<Unit> {
+        val conversationId = id.toLongOrNull() ?: return Result.failure(Exception("Invalid ID"))
+        return try {
+            api.deleteConversation(conversationId)
+            messageDao.clearMessagesForConversation(conversationId)
+            dao.deleteConversation(conversationId)
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }

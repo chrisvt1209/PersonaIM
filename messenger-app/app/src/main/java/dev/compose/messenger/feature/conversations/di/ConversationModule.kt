@@ -7,6 +7,6 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val conversationModule = module {
-    single<ConversationRepository> { ConversationRepositoryImpl(get(), get()) }
+    single<ConversationRepository> { ConversationRepositoryImpl(get(), get(), get()) }
     viewModel { ConversationViewModel(get()) }
 }

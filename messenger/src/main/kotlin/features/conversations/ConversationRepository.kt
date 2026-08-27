@@ -53,6 +53,28 @@ class ConversationRepository(
         )
     }
 
+    fun findBetween(user1: Long, user2: Long): Conversation? {
+        val conversationIds = database
+            .from(ConversationParticipants)
+            .select(ConversationParticipants.conversationId)
+            .where { ConversationParticipants.userId eq user1 }
+            .map { it[ConversationParticipants.conversationId]!! }
+
+        for (conversationId in conversationIds) {
+            val participants = database
+                .from(ConversationParticipants)
+                .select(ConversationParticipants.userId)
+                .where { ConversationParticipants.conversationId eq conversationId }
+                .map { it[ConversationParticipants.userId]!! }
+
+            if (participants.size == 2 && participants.contains(user2)) {
+                return Conversation(id = conversationId, participantIds = participants)
+            }
+        }
+
+        return null
+    }
+
     fun userIsParticipant(
         conversationId: Long,
         userId: Long
@@ -76,5 +98,9 @@ class ConversationRepository(
             .map { it[ConversationParticipants.conversationId]!! }
 
         return conversationIds.mapNotNull { findById(it) }
+    }
+
+    fun delete(conversationId: Long) {
+        database.delete(Conversations) { it.id eq conversationId }
     }
 }

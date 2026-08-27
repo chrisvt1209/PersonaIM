@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,7 +32,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -58,14 +63,38 @@ fun ConversationListRoute(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    var conversationPendingDelete by remember { mutableStateOf<Conversation?>(null) }
+
     ConversationListScreen(
         uiState = uiState,
         onConversationClick = onConversationClick,
         onProfileClick = onProfileClick,
         onAddClick = onAddClick,
+        onDeleteClick = { conversation -> conversationPendingDelete = conversation },
         season = season,
         onSeasonChange = onSeasonChange
     )
+
+    conversationPendingDelete?.let { conversation ->
+        AlertDialog(
+            onDismissRequest = { conversationPendingDelete = null },
+            title = { Text("Delete Conversation") },
+            text = { Text("Delete conversation with ${conversation.title}? This cannot be undone.") },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.onEvent(ConversationEvent.DeleteConversation(conversation.id))
+                    conversationPendingDelete = null
+                }) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { conversationPendingDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -74,6 +103,7 @@ fun ConversationListScreen(
     onConversationClick: (String) -> Unit,
     onProfileClick: () -> Unit,
     onAddClick: () -> Unit,
+    onDeleteClick: (Conversation) -> Unit,
     season: Season,
     onSeasonChange: (Season) -> Unit
 ) {
@@ -113,7 +143,8 @@ fun ConversationListScreen(
                     items(uiState.conversations) { conversation ->
                         ConversationItem(
                             conversation = conversation,
-                            onClick = { onConversationClick(conversation.id) }
+                            onClick = { onConversationClick(conversation.id) },
+                            onDeleteClick = { onDeleteClick(conversation) }
                         )
                     }
                     item {
@@ -214,7 +245,8 @@ private fun headerStatus(season: Season): String {
 @Composable
 private fun ConversationItem(
     conversation: Conversation,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
@@ -266,6 +298,14 @@ private fun ConversationItem(
                         fontSize = 13.sp,
                     )
                 }
+            }
+
+            IconButton(onClick = onDeleteClick, modifier = Modifier.size(24.dp)) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete conversation",
+                    tint = Color.White.copy(alpha = 0.7f)
+                )
             }
         }
 

@@ -64,6 +64,26 @@ fun Route.conversationRoutes(
                 
                 call.respond(conversation)
             }
+
+            delete("/{id}") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.subject?.toLongOrNull()
+                    ?: return@delete call.respond(HttpStatusCode.Unauthorized)
+
+                val id =
+                    call.parameters["id"]
+                        ?.toLongOrNull()
+                        ?: return@delete call.respond(
+                            HttpStatusCode.BadRequest
+                        )
+
+                try {
+                    service.delete(id, userId)
+                    call.respond(HttpStatusCode.NoContent)
+                } catch (e: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.NotFound)
+                }
+            }
         }
     }
 }
