@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dev.compose.messenger.feature.auth.data.AuthRepository
 import dev.compose.messenger.feature.auth.data.LoginRequest
 import dev.compose.messenger.feature.auth.data.RegisterRequest
+import dev.compose.messenger.feature.profile.data.ProfileRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +13,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -39,6 +41,7 @@ class AuthViewModel(
                 )
             )
             result.onSuccess {
+                profileRepository.syncProfile()
                 _uiState.update { it.copy(isLoading = false, isAuthenticated = true) }
             }.onFailure { e ->
                 _uiState.update { it.copy(isLoading = false, error = e.message) }
@@ -57,6 +60,7 @@ class AuthViewModel(
                 )
             )
             result.onSuccess {
+                profileRepository.syncProfile()
                 _uiState.update { it.copy(isLoading = false, isAuthenticated = true) }
             }.onFailure { e ->
                 _uiState.update { it.copy(isLoading = false, error = e.message) }

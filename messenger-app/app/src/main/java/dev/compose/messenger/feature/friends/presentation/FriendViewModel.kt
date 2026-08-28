@@ -67,6 +67,19 @@ class FriendViewModel(
                         }
                 }
             }
+            is FriendEvent.CreateGroup -> {
+                viewModelScope.launch {
+                    _uiState.update { it.copy(isLoading = true, error = null) }
+                    conversationRepository.createGroup(event.title, event.memberUserIds)
+                        .onSuccess { conversation ->
+                            _uiState.update { it.copy(isLoading = false) }
+                            _navigationEvent.value = "chat/${conversation.id}"
+                        }
+                        .onFailure { e ->
+                            _uiState.update { it.copy(isLoading = false, error = e.message) }
+                        }
+                }
+            }
         }
     }
 }
@@ -81,4 +94,5 @@ sealed interface FriendEvent {
     data class AddFriend(val uid: String) : FriendEvent
     data object Refresh : FriendEvent
     data class StartChat(val userId: Long) : FriendEvent
+    data class CreateGroup(val title: String, val memberUserIds: List<Long>) : FriendEvent
 }

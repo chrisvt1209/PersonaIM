@@ -47,6 +47,7 @@ import dev.compose.messenger.core.designsystem.component.PersonaButton
 import dev.compose.messenger.core.designsystem.component.PersonaTextField
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
+import dev.compose.messenger.core.common.model.Avatar
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
 import dev.compose.messenger.feature.profile.domain.User
 
@@ -57,14 +58,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import dev.compose.messenger.core.designsystem.component.SeasonMenu
 import org.koin.androidx.compose.koinViewModel
-
-private val AVAILABLE_AVATARS = listOf("ann", "ryuji", "yusuke")
-
-private fun avatarDrawable(avatar: String): Int = when (avatar) {
-    "ryuji" -> R.drawable.ryuji
-    "yusuke" -> R.drawable.yusuke
-    else -> R.drawable.ann
-}
 
 @Composable
 fun ProfileRoute(
@@ -148,7 +141,7 @@ fun ProfileScreen(
                 CircularProgressIndicator(color = Color.White)
             } else if (uiState.user != null) {
                 Image(
-                    painter = painterResource(avatarDrawable(uiState.user.avatar)),
+                    painter = painterResource(Avatar.fromKey(uiState.user.avatar).drawableRes),
                     contentDescription = null,
                     modifier = Modifier.size(160.dp)
                 )
@@ -320,19 +313,19 @@ private fun EditProfileDialog(
         text = {
             Column {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    AVAILABLE_AVATARS.forEach { option ->
+                    Avatar.entries.forEach { option ->
                         Image(
-                            painter = painterResource(avatarDrawable(option)),
-                            contentDescription = option,
+                            painter = painterResource(option.drawableRes),
+                            contentDescription = option.key,
                             modifier = Modifier
                                 .size(56.dp)
                                 .clip(CircleShape)
                                 .border(
-                                    width = if (avatar == option) 3.dp else 0.dp,
+                                    width = if (avatar == option.key) 3.dp else 0.dp,
                                     color = PersonaRed,
                                     shape = CircleShape
                                 )
-                                .clickable { avatar = option }
+                                .clickable { avatar = option.key }
                         )
                     }
                 }

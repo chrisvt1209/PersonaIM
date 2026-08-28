@@ -12,3 +12,22 @@ data class Conversation(
     val accentColor: Color,
     val avatarUrls: List<Int> = emptyList() // Using resource IDs for now
 )
+
+data class Participant(
+    val userId: Long,
+    val username: String,
+    val status: String
+)
+
+data class ConversationDetail(
+    val id: String,
+    val title: String,
+    val isGroup: Boolean,
+    val participants: List<Participant>
+)
+
+data class GroupInvite(
+    val id: String,
+    val title: String,
+    val memberCount: Int
+)

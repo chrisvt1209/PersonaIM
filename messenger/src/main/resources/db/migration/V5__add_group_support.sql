@@ -1,0 +1,2 @@
+ALTER TABLE conversations ADD COLUMN title VARCHAR(255);
+ALTER TABLE conversation_participants ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'ACCEPTED';

@@ -5,6 +5,8 @@ import dev.compose.messenger.core.datastore.PreferencesManager
 import dev.compose.messenger.core.network.api.AuthApi
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.IOException
 
 interface AuthRepository {
@@ -21,6 +23,7 @@ class AuthRepositoryImpl(
     override suspend fun login(request: LoginRequest): Result<AuthResponse> {
         return try {
             val response = api.login(request)
+            withContext(Dispatchers.IO) { database.clearAllTables() }
             preferencesManager.saveAuthToken(response.token)
             Result.success(response)
         } catch (e: Exception) {
@@ -31,6 +34,7 @@ class AuthRepositoryImpl(
     override suspend fun register(request: RegisterRequest): Result<AuthResponse> {
         return try {
             val response = api.register(request)
+            withContext(Dispatchers.IO) { database.clearAllTables() }
             preferencesManager.saveAuthToken(response.token)
             Result.success(response)
         } catch (e: Exception) {
@@ -40,7 +44,7 @@ class AuthRepositoryImpl(
 
     override suspend fun logout() {
         preferencesManager.clear()
-        database.clearAllTables()
+        withContext(Dispatchers.IO) { database.clearAllTables() }
     }
 
     // Never surface e.message straight to the UI: for ResponseException it embeds

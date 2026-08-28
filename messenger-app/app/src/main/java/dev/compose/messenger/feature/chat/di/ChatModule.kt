@@ -8,5 +8,5 @@ import org.koin.dsl.module
 
 val chatModule = module {
     single<ChatRepository> { ChatRepositoryImpl(get(), get(), get()) }
-    viewModel { (conversationId: String) -> ChatViewModel(get(), conversationId) }
+    viewModel { (conversationId: String) -> ChatViewModel(get(), get(), get(), conversationId) }
 }

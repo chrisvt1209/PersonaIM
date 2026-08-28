@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,7 +36,9 @@ fun ChatTopBar(
     subtitle: String,
     onBackClick: () -> Unit,
     season: Season,
-    onSeasonChange: (Season) -> Unit
+    onSeasonChange: (Season) -> Unit,
+    showInviteButton: Boolean = false,
+    onInviteClick: () -> Unit = {}
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -69,6 +73,17 @@ fun ChatTopBar(
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 13.sp,
             )
+        }
+
+        if (showInviteButton) {
+            IconButton(onClick = onInviteClick, modifier = Modifier.padding(top = 8.dp)) {
+                Icon(
+                    imageVector = Icons.Default.GroupAdd,
+                    contentDescription = "Invite to Group",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
 
         SeasonMenu(

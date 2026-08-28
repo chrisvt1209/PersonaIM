@@ -18,7 +18,7 @@ import dev.compose.messenger.core.database.entity.UserEntity
         MessageEntity::class,
         FriendEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class MessengerDatabase : RoomDatabase() {

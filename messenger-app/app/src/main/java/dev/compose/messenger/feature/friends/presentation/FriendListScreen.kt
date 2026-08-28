@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.*
@@ -44,6 +45,7 @@ fun FriendListRoute(
     }
 
     var showAddDialog by remember { mutableStateOf(false) }
+    var showNewGroupDialog by remember { mutableStateOf(false) }
 
     FriendListScreen(
         uiState = uiState,
@@ -52,6 +54,7 @@ fun FriendListRoute(
         },
         onBackClick = onBackClick,
         onAddClick = { showAddDialog = true },
+        onNewGroupClick = { showNewGroupDialog = true },
         season = season,
         onSeasonChange = onSeasonChange
     )
@@ -89,6 +92,75 @@ fun FriendListRoute(
             }
         )
     }
+
+    if (showNewGroupDialog) {
+        var groupName by remember { mutableStateOf("") }
+        val selectedFriendIds = remember { mutableStateListOf<Long>() }
+
+        AlertDialog(
+            onDismissRequest = { showNewGroupDialog = false },
+            title = { Text("New Group") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = groupName,
+                        onValueChange = { groupName = it },
+                        label = { Text("Group name") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("Select friends to invite:")
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        uiState.friends.forEach { friend ->
+                            val checked = selectedFriendIds.contains(friend.id)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (checked) {
+                                            selectedFriendIds.remove(friend.id)
+                                        } else {
+                                            selectedFriendIds.add(friend.id)
+                                        }
+                                    }
+                            ) {
+                                Checkbox(
+                                    checked = checked,
+                                    onCheckedChange = { isChecked ->
+                                        if (isChecked) {
+                                            selectedFriendIds.add(friend.id)
+                                        } else {
+                                            selectedFriendIds.remove(friend.id)
+                                        }
+                                    }
+                                )
+                                Text(friend.username)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    enabled = groupName.isNotBlank() && selectedFriendIds.isNotEmpty(),
+                    onClick = {
+                        viewModel.onEvent(
+                            FriendEvent.CreateGroup(groupName, selectedFriendIds.toList())
+                        )
+                        showNewGroupDialog = false
+                    }
+                ) {
+                    Text("Create")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showNewGroupDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -97,6 +169,7 @@ fun FriendListScreen(
     onFriendClick: (Long) -> Unit,
     onBackClick: () -> Unit,
     onAddClick: () -> Unit,
+    onNewGroupClick: () -> Unit,
     season: Season,
     onSeasonChange: (Season) -> Unit
 ) {
@@ -123,6 +196,7 @@ fun FriendListScreen(
                 FriendHeader(
                     onBackClick = onBackClick,
                     onAddFriendClick = onAddClick,
+                    onNewGroupClick = onNewGroupClick,
                     season = season,
                     onSeasonChange = onSeasonChange
                 )
@@ -163,6 +237,7 @@ fun FriendListScreen(
 private fun FriendHeader(
     onBackClick: () -> Unit,
     onAddFriendClick: () -> Unit,
+    onNewGroupClick: () -> Unit,
     season: Season,
     onSeasonChange: (Season) -> Unit
 ) {
@@ -218,6 +293,15 @@ private fun FriendHeader(
                 Icon(
                     imageVector = Icons.Default.PersonAdd,
                     contentDescription = "Add Friend",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            IconButton(onClick = onNewGroupClick, modifier = Modifier.padding(top = 8.dp)) {
+                Icon(
+                    imageVector = Icons.Default.GroupAdd,
+                    contentDescription = "New Group",
                     tint = Color.White,
                     modifier = Modifier.size(32.dp)
                 )

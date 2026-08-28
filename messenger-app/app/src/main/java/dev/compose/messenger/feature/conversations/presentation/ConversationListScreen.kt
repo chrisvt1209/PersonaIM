@@ -2,6 +2,7 @@ package dev.compose.messenger.feature.conversations.presentation
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -22,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -44,12 +46,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
+import dev.compose.messenger.core.common.model.Avatar
 import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.core.designsystem.component.SeasonMenu
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
+import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.designsystem.util.personaBadgeBackground
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
 import dev.compose.messenger.feature.conversations.domain.Conversation
+import dev.compose.messenger.feature.conversations.domain.GroupInvite
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -64,6 +69,7 @@ fun ConversationListRoute(
     val uiState by viewModel.uiState.collectAsState()
 
     var conversationPendingDelete by remember { mutableStateOf<Conversation?>(null) }
+    var showInvitesDialog by remember { mutableStateOf(false) }
 
     ConversationListScreen(
         uiState = uiState,
@@ -71,6 +77,7 @@ fun ConversationListRoute(
         onProfileClick = onProfileClick,
         onAddClick = onAddClick,
         onDeleteClick = { conversation -> conversationPendingDelete = conversation },
+        onInvitesClick = { showInvitesDialog = true },
         season = season,
         onSeasonChange = onSeasonChange
     )
@@ -95,6 +102,59 @@ fun ConversationListRoute(
             }
         )
     }
+
+    if (showInvitesDialog) {
+        InvitesDialog(
+            invites = uiState.invites,
+            onAccept = { viewModel.onEvent(ConversationEvent.AcceptInvite(it)) },
+            onDecline = { viewModel.onEvent(ConversationEvent.DeclineInvite(it)) },
+            onDismiss = { showInvitesDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun InvitesDialog(
+    invites: List<GroupInvite>,
+    onAccept: (String) -> Unit,
+    onDecline: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Group Invites") },
+        text = {
+            if (invites.isEmpty()) {
+                Text("No pending invites.")
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    invites.forEach { invite ->
+                        Column {
+                            Text(invite.title, fontFamily = OptimaNova, fontSize = 16.sp)
+                            Text(
+                                "${invite.memberCount} members",
+                                fontSize = 12.sp,
+                                color = Color.Black.copy(alpha = 0.6f)
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(onClick = { onAccept(invite.id) }) {
+                                    Text("Accept")
+                                }
+                                Button(onClick = { onDecline(invite.id) }) {
+                                    Text("Decline")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
 }
 
 @Composable
@@ -104,6 +164,7 @@ fun ConversationListScreen(
     onProfileClick: () -> Unit,
     onAddClick: () -> Unit,
     onDeleteClick: (Conversation) -> Unit,
+    onInvitesClick: () -> Unit,
     season: Season,
     onSeasonChange: (Season) -> Unit
 ) {
@@ -114,8 +175,11 @@ fun ConversationListScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             PersonaListHeader(
+                userAvatar = uiState.userAvatar,
+                inviteCount = uiState.invites.size,
                 onProfileClick = onProfileClick,
                 onAddClick = onAddClick,
+                onInvitesClick = onInvitesClick,
                 season = season,
                 onSeasonChange = onSeasonChange
             )
@@ -158,8 +222,11 @@ fun ConversationListScreen(
 
 @Composable
 private fun PersonaListHeader(
+    userAvatar: String,
+    inviteCount: Int,
     onProfileClick: () -> Unit,
     onAddClick: () -> Unit,
+    onInvitesClick: () -> Unit,
     season: Season,
     onSeasonChange: (Season) -> Unit
 ) {
@@ -213,6 +280,33 @@ private fun PersonaListHeader(
                 onSeasonChange = onSeasonChange
             )
 
+            if (inviteCount > 0) {
+                Box {
+                    IconButton(onClick = onInvitesClick) {
+                        Icon(
+                            imageVector = Icons.Default.MarkEmailUnread,
+                            contentDescription = "Group Invites",
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = (-4).dp, y = 6.dp)
+                            .size(16.dp)
+                            .background(PersonaRed, shape = androidx.compose.foundation.shape.CircleShape)
+                    ) {
+                        Text(
+                            text = inviteCount.toString(),
+                            color = Color.White,
+                            fontSize = 10.sp
+                        )
+                    }
+                }
+            }
+
             IconButton(onClick = onAddClick) {
                 Icon(
                     imageVector = Icons.Default.Group,
@@ -223,7 +317,7 @@ private fun PersonaListHeader(
             }
 
             Image(
-                painter = painterResource(R.drawable.ann),
+                painter = painterResource(Avatar.fromKey(userAvatar).drawableRes),
                 contentDescription = "Profile",
                 modifier = Modifier
                     .height(60.dp)
