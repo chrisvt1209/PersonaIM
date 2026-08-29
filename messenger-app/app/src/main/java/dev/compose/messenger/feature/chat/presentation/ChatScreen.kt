@@ -47,7 +47,6 @@ fun ChatRoute(
     conversationId: String,
     onBackClick: () -> Unit,
     season: Season,
-    onSeasonChange: (Season) -> Unit,
     viewModel: ChatViewModel = koinViewModel { parametersOf(conversationId) }
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -63,8 +62,7 @@ fun ChatRoute(
             viewModel.onEvent(ChatEvent.LoadFriendsForInvite)
             showInviteDialog = true
         },
-        season = season,
-        onSeasonChange = onSeasonChange
+        season = season
     )
 
     if (showInviteDialog) {
@@ -111,8 +109,7 @@ fun ChatScreen(
     onEvent: (ChatEvent) -> Unit,
     onBackClick: () -> Unit,
     onInviteClick: () -> Unit,
-    season: Season,
-    onSeasonChange: (Season) -> Unit
+    season: Season
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -125,7 +122,6 @@ fun ChatScreen(
                 subtitle = "active now",
                 onBackClick = onBackClick,
                 season = season,
-                onSeasonChange = onSeasonChange,
                 showInviteButton = uiState.isGroup,
                 onInviteClick = onInviteClick
             )

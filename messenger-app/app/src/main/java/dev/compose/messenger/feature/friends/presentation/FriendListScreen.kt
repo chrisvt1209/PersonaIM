@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.compose.messenger.core.designsystem.component.SeasonMenu
 import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
@@ -32,7 +31,6 @@ fun FriendListRoute(
     onNavigate: (String) -> Unit,
     onBackClick: () -> Unit,
     season: Season,
-    onSeasonChange: (Season) -> Unit,
     viewModel: FriendViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -57,8 +55,7 @@ fun FriendListRoute(
         onAddClick = { showAddDialog = true },
         onNewGroupClick = { showNewGroupDialog = true },
         onErrorShown = { viewModel.onEvent(FriendEvent.ErrorShown) },
-        season = season,
-        onSeasonChange = onSeasonChange
+        season = season
     )
 
     if (showAddDialog) {
@@ -173,8 +170,7 @@ fun FriendListScreen(
     onAddClick: () -> Unit,
     onNewGroupClick: () -> Unit,
     onErrorShown: () -> Unit = {},
-    season: Season,
-    onSeasonChange: (Season) -> Unit
+    season: Season
 ) {
     Scaffold(
         floatingActionButton = {
@@ -200,8 +196,7 @@ fun FriendListScreen(
                     onBackClick = onBackClick,
                     onAddFriendClick = onAddClick,
                     onNewGroupClick = onNewGroupClick,
-                    season = season,
-                    onSeasonChange = onSeasonChange
+                    season = season
                 )
 
                 if (uiState.error != null) {
@@ -258,8 +253,7 @@ private fun FriendHeader(
     onBackClick: () -> Unit,
     onAddFriendClick: () -> Unit,
     onNewGroupClick: () -> Unit,
-    season: Season,
-    onSeasonChange: (Season) -> Unit
+    season: Season
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -297,18 +291,6 @@ private fun FriendHeader(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            SeasonMenu(
-                hostElement = {
-                    Icon(
-                        imageVector = Icons.Default.Palette,
-                        contentDescription = "Change Season",
-                        tint = Color.White,
-                        modifier = Modifier.padding(top = 12.dp).size(28.dp)
-                    )
-                },
-                onSeasonChange = onSeasonChange
-            )
-
             IconButton(onClick = onAddFriendClick, modifier = Modifier.padding(top = 8.dp)) {
                 Icon(
                     imageVector = Icons.Default.PersonAdd,

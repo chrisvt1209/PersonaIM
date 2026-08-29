@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.Avatar
 import dev.compose.messenger.core.common.model.Season
-import dev.compose.messenger.core.designsystem.component.SeasonMenu
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.designsystem.util.personaBadgeBackground
@@ -65,7 +64,6 @@ fun ConversationListRoute(
     onProfileClick: () -> Unit,
     onAddClick: () -> Unit,
     season: Season,
-    onSeasonChange: (Season) -> Unit,
     viewModel: ConversationViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -81,8 +79,7 @@ fun ConversationListRoute(
         onDeleteClick = { conversation -> conversationPendingDelete = conversation },
         onInvitesClick = { showInvitesDialog = true },
         onErrorShown = { viewModel.onEvent(ConversationEvent.ErrorShown) },
-        season = season,
-        onSeasonChange = onSeasonChange
+        season = season
     )
 
     conversationPendingDelete?.let { conversation ->
@@ -169,8 +166,7 @@ fun ConversationListScreen(
     onDeleteClick: (Conversation) -> Unit,
     onInvitesClick: () -> Unit,
     onErrorShown: () -> Unit = {},
-    season: Season,
-    onSeasonChange: (Season) -> Unit
+    season: Season
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -184,8 +180,7 @@ fun ConversationListScreen(
                 onProfileClick = onProfileClick,
                 onAddClick = onAddClick,
                 onInvitesClick = onInvitesClick,
-                season = season,
-                onSeasonChange = onSeasonChange
+                season = season
             )
 
             if (uiState.error != null) {
@@ -256,8 +251,7 @@ private fun PersonaListHeader(
     onProfileClick: () -> Unit,
     onAddClick: () -> Unit,
     onInvitesClick: () -> Unit,
-    season: Season,
-    onSeasonChange: (Season) -> Unit
+    season: Season
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -297,18 +291,6 @@ private fun PersonaListHeader(
             modifier = Modifier.padding(top = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SeasonMenu(
-                hostElement = {
-                    Icon(
-                        imageVector = Icons.Default.Palette,
-                        contentDescription = "Change Season",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp).padding(4.dp)
-                    )
-                },
-                onSeasonChange = onSeasonChange
-            )
-
             if (inviteCount > 0) {
                 Box {
                     IconButton(onClick = onInvitesClick) {

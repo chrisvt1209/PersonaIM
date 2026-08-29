@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GroupAdd
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -28,7 +27,6 @@ import dev.compose.messenger.R
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 
 import dev.compose.messenger.core.common.model.Season
-import dev.compose.messenger.core.designsystem.component.SeasonMenu
 
 @Composable
 fun ChatTopBar(
@@ -36,7 +34,6 @@ fun ChatTopBar(
     subtitle: String,
     onBackClick: () -> Unit,
     season: Season,
-    onSeasonChange: (Season) -> Unit,
     showInviteButton: Boolean = false,
     onInviteClick: () -> Unit = {}
 ) {
@@ -69,7 +66,7 @@ fun ChatTopBar(
                 fontSize = 26.sp,
             )
             Text(
-                text = subtitle,
+                text = "$subtitle | ${seasonLabel(season)}",
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 13.sp,
             )
@@ -85,17 +82,13 @@ fun ChatTopBar(
                 )
             }
         }
+    }
+}
 
-        SeasonMenu(
-            hostElement = {
-                Icon(
-                    imageVector = Icons.Default.Palette,
-                    contentDescription = "Change Season",
-                    tint = Color.White,
-                    modifier = Modifier.padding(top = 12.dp).size(28.dp)
-                )
-            },
-            onSeasonChange = onSeasonChange
-        )
+private fun seasonLabel(season: Season): String {
+    return when (season) {
+        Season.NONE -> "clean feed"
+        Season.SPRING -> "spring flair"
+        Season.WINTER -> "winter flair"
     }
 }
