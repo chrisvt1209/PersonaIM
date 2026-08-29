@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.Avatar
-import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.designsystem.util.personaBadgeBackground
@@ -63,7 +62,6 @@ fun ConversationListRoute(
     onConversationClick: (String) -> Unit,
     onProfileClick: () -> Unit,
     onAddClick: () -> Unit,
-    season: Season,
     viewModel: ConversationViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -78,8 +76,7 @@ fun ConversationListRoute(
         onAddClick = onAddClick,
         onDeleteClick = { conversation -> conversationPendingDelete = conversation },
         onInvitesClick = { showInvitesDialog = true },
-        onErrorShown = { viewModel.onEvent(ConversationEvent.ErrorShown) },
-        season = season
+        onErrorShown = { viewModel.onEvent(ConversationEvent.ErrorShown) }
     )
 
     conversationPendingDelete?.let { conversation ->
@@ -165,8 +162,7 @@ fun ConversationListScreen(
     onAddClick: () -> Unit,
     onDeleteClick: (Conversation) -> Unit,
     onInvitesClick: () -> Unit,
-    onErrorShown: () -> Unit = {},
-    season: Season
+    onErrorShown: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -179,8 +175,7 @@ fun ConversationListScreen(
                 inviteCount = uiState.invites.size,
                 onProfileClick = onProfileClick,
                 onAddClick = onAddClick,
-                onInvitesClick = onInvitesClick,
-                season = season
+                onInvitesClick = onInvitesClick
             )
 
             if (uiState.error != null) {
@@ -250,8 +245,7 @@ private fun PersonaListHeader(
     inviteCount: Int,
     onProfileClick: () -> Unit,
     onAddClick: () -> Unit,
-    onInvitesClick: () -> Unit,
-    season: Season
+    onInvitesClick: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -279,11 +273,6 @@ private fun PersonaListHeader(
                 color = Color.White,
                 fontFamily = OptimaNova,
                 fontSize = 26.sp,
-            )
-            Text(
-                text = headerStatus(season),
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 13.sp,
             )
         }
 
@@ -336,15 +325,6 @@ private fun PersonaListHeader(
             )
         }
     }
-}
-
-private fun headerStatus(season: Season): String {
-    val seasonLabel = when (season) {
-        Season.NONE -> "clean feed"
-        Season.SPRING -> "spring flair"
-        Season.WINTER -> "winter flair"
-    }
-    return "recent chatter | $seasonLabel"
 }
 
 @Composable

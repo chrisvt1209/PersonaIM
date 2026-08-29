@@ -19,7 +19,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
-import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
 import dev.compose.messenger.feature.friends.domain.Friend
@@ -30,7 +29,6 @@ import org.koin.androidx.compose.koinViewModel
 fun FriendListRoute(
     onNavigate: (String) -> Unit,
     onBackClick: () -> Unit,
-    season: Season,
     viewModel: FriendViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -54,8 +52,7 @@ fun FriendListRoute(
         onBackClick = onBackClick,
         onAddClick = { showAddDialog = true },
         onNewGroupClick = { showNewGroupDialog = true },
-        onErrorShown = { viewModel.onEvent(FriendEvent.ErrorShown) },
-        season = season
+        onErrorShown = { viewModel.onEvent(FriendEvent.ErrorShown) }
     )
 
     if (showAddDialog) {
@@ -169,8 +166,7 @@ fun FriendListScreen(
     onBackClick: () -> Unit,
     onAddClick: () -> Unit,
     onNewGroupClick: () -> Unit,
-    onErrorShown: () -> Unit = {},
-    season: Season
+    onErrorShown: () -> Unit = {}
 ) {
     Scaffold(
         floatingActionButton = {
@@ -195,8 +191,7 @@ fun FriendListScreen(
                 FriendHeader(
                     onBackClick = onBackClick,
                     onAddFriendClick = onAddClick,
-                    onNewGroupClick = onNewGroupClick,
-                    season = season
+                    onNewGroupClick = onNewGroupClick
                 )
 
                 if (uiState.error != null) {
@@ -252,8 +247,7 @@ fun FriendListScreen(
 private fun FriendHeader(
     onBackClick: () -> Unit,
     onAddFriendClick: () -> Unit,
-    onNewGroupClick: () -> Unit,
-    season: Season
+    onNewGroupClick: () -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -283,11 +277,6 @@ private fun FriendHeader(
                 fontFamily = OptimaNova,
                 fontSize = 26.sp,
             )
-            Text(
-                text = headerStatus(season),
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 13.sp,
-            )
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -312,14 +301,6 @@ private fun FriendHeader(
     }
 }
 
-private fun headerStatus(season: Season): String {
-    val seasonLabel = when (season) {
-        Season.NONE -> "clean feed"
-        Season.SPRING -> "spring flair"
-        Season.WINTER -> "winter flair"
-    }
-    return "recent contacts | $seasonLabel"
-}
 
 @Composable
 fun FriendItem(

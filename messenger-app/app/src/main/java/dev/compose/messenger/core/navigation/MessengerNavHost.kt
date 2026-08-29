@@ -44,8 +44,7 @@ fun MessengerNavHost(
                 },
                 onAddClick = {
                     navController.navigate("friends")
-                },
-                season = season
+                }
             )
         }
         composable("friends") {
@@ -57,8 +56,7 @@ fun MessengerNavHost(
                 },
                 onBackClick = {
                     navController.popBackStack()
-                },
-                season = season
+                }
             )
         }
         composable("chat/{conversationId}") { backStackEntry ->
@@ -67,8 +65,7 @@ fun MessengerNavHost(
                 conversationId = conversationId,
                 onBackClick = {
                     navController.popBackStack()
-                },
-                season = season
+                }
             )
         }
         composable("profile") {

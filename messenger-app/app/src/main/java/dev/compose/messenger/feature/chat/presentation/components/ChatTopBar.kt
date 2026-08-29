@@ -26,14 +26,10 @@ import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 
-import dev.compose.messenger.core.common.model.Season
-
 @Composable
 fun ChatTopBar(
     title: String,
-    subtitle: String,
     onBackClick: () -> Unit,
-    season: Season,
     showInviteButton: Boolean = false,
     onInviteClick: () -> Unit = {}
 ) {
@@ -65,11 +61,6 @@ fun ChatTopBar(
                 fontFamily = OptimaNova,
                 fontSize = 26.sp,
             )
-            Text(
-                text = "$subtitle | ${seasonLabel(season)}",
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 13.sp,
-            )
         }
 
         if (showInviteButton) {
@@ -82,13 +73,5 @@ fun ChatTopBar(
                 )
             }
         }
-    }
-}
-
-private fun seasonLabel(season: Season): String {
-    return when (season) {
-        Season.NONE -> "clean feed"
-        Season.SPRING -> "spring flair"
-        Season.WINTER -> "winter flair"
     }
 }

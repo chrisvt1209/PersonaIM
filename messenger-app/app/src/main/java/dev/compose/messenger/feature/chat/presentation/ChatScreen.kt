@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.core.designsystem.component.BackgroundParticles
 import dev.compose.messenger.R
-import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.feature.chat.presentation.components.ChatTopBar
 import dev.compose.messenger.feature.chat.presentation.components.MessageInput
@@ -46,7 +45,6 @@ import org.koin.core.parameter.parametersOf
 fun ChatRoute(
     conversationId: String,
     onBackClick: () -> Unit,
-    season: Season,
     viewModel: ChatViewModel = koinViewModel { parametersOf(conversationId) }
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -61,8 +59,7 @@ fun ChatRoute(
         onInviteClick = {
             viewModel.onEvent(ChatEvent.LoadFriendsForInvite)
             showInviteDialog = true
-        },
-        season = season
+        }
     )
 
     if (showInviteDialog) {
@@ -108,8 +105,7 @@ fun ChatScreen(
     uiState: ChatUiState,
     onEvent: (ChatEvent) -> Unit,
     onBackClick: () -> Unit,
-    onInviteClick: () -> Unit,
-    season: Season
+    onInviteClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -119,9 +115,7 @@ fun ChatScreen(
         ) {
             ChatTopBar(
                 title = uiState.conversationTitle,
-                subtitle = "active now",
                 onBackClick = onBackClick,
-                season = season,
                 showInviteButton = uiState.isGroup,
                 onInviteClick = onInviteClick
             )

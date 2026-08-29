@@ -266,11 +266,6 @@ private fun ProfileHeader(
                 fontFamily = OptimaNova,
                 fontSize = 26.sp,
             )
-            Text(
-                text = "user settings | clean feed",
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 13.sp,
-            )
         }
 
         SeasonMenu(
