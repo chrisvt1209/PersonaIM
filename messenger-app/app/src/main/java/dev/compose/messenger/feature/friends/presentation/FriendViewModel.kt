@@ -80,6 +80,7 @@ class FriendViewModel(
                         }
                 }
             }
+            FriendEvent.ErrorShown -> _uiState.update { it.copy(error = null) }
         }
     }
 }
@@ -95,4 +96,5 @@ sealed interface FriendEvent {
     data object Refresh : FriendEvent
     data class StartChat(val userId: Long) : FriendEvent
     data class CreateGroup(val title: String, val memberUserIds: List<Long>) : FriendEvent
+    data object ErrorShown : FriendEvent
 }

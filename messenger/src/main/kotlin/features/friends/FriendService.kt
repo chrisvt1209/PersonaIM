@@ -1,5 +1,8 @@
 package features.friends
 
+import common.BadRequestException
+import common.ConflictException
+import common.NotFoundException
 import features.users.UserRepository
 
 class FriendService(
@@ -8,14 +11,14 @@ class FriendService(
 ) {
     fun addFriend(userId: Long, friendUid: String): FriendResponse {
         val friend = userRepository.findByUid(friendUid)
-            ?: throw IllegalArgumentException("User with UID $friendUid not found")
+            ?: throw NotFoundException("User with UID $friendUid not found")
 
         if (friend.id == userId) {
-            throw IllegalArgumentException("You cannot add yourself as a friend")
+            throw BadRequestException("You cannot add yourself as a friend")
         }
 
         if (friendRepository.areFriends(userId, friend.id)) {
-            throw IllegalArgumentException("You are already friends with ${friend.username}")
+            throw ConflictException("You are already friends with ${friend.username}")
         }
 
         friendRepository.addFriend(userId, friend.id)

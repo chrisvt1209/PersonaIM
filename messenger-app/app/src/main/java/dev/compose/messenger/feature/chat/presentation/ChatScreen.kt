@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.compose.messenger.core.designsystem.component.BackgroundParticles
 import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.Season
@@ -37,6 +38,7 @@ import dev.compose.messenger.feature.chat.presentation.components.ChatTopBar
 import dev.compose.messenger.feature.chat.presentation.components.MessageInput
 import dev.compose.messenger.feature.chat.presentation.components.MessageList
 import dev.compose.messenger.feature.chat.presentation.rememberTranscriptState
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -149,6 +151,23 @@ fun ChatScreen(
                     entries = transcriptState.entries,
                     showTypingIndicator = uiState.typingSender != null,
                     modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            if (uiState.sendError != null) {
+                val error = uiState.sendError
+                LaunchedEffect(error) {
+                    delay(4000)
+                    onEvent(ChatEvent.SendErrorShown)
+                }
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onEvent(ChatEvent.SendErrorShown) }
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
                 )
             }
 

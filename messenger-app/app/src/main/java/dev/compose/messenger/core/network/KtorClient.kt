@@ -35,6 +35,11 @@ class AuthPluginConfig {
 
 fun createHttpClient(preferencesManager: PreferencesManager): HttpClient {
     return HttpClient(OkHttp) {
+        // Without this, Ktor won't throw on 4xx/5xx responses: .body() would try to
+        // decode the error JSON as the success DTO and fail with a confusing
+        // serialization exception instead of a catchable ResponseException.
+        expectSuccess = true
+
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true

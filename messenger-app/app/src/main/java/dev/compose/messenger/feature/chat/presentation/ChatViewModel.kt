@@ -54,6 +54,7 @@ class ChatViewModel(
             ChatEvent.SendClicked -> sendMessage()
             ChatEvent.LoadFriendsForInvite -> loadFriendsForInvite()
             is ChatEvent.InviteFriend -> inviteFriend(event.userId)
+            ChatEvent.SendErrorShown -> _uiState.update { it.copy(sendError = null) }
         }
     }
 
@@ -61,10 +62,11 @@ class ChatViewModel(
         val text = _uiState.value.draft.trim()
         if (text.isEmpty()) return
 
-        _uiState.update { it.copy(draft = "") }
+        _uiState.update { it.copy(draft = "", sendError = null) }
 
         viewModelScope.launch {
             repository.sendMessage(conversationId, text)
+                .onFailure { e -> _uiState.update { it.copy(sendError = e.message) } }
         }
     }
 
@@ -95,7 +97,8 @@ data class ChatUiState(
     val isGroup: Boolean = false,
     val participants: List<Participant> = emptyList(),
     val availableFriendsToInvite: List<Friend> = emptyList(),
-    val inviteError: String? = null
+    val inviteError: String? = null,
+    val sendError: String? = null
 )
 
 sealed interface ChatEvent {
@@ -103,4 +106,5 @@ sealed interface ChatEvent {
     data object SendClicked : ChatEvent
     data object LoadFriendsForInvite : ChatEvent
     data class InviteFriend(val userId: Long) : ChatEvent
+    data object SendErrorShown : ChatEvent
 }

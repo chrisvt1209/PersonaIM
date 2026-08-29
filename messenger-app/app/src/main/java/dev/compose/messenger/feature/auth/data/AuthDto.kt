@@ -19,8 +19,3 @@ data class LoginRequest(
 data class AuthResponse(
     val token: String
 )
-
-@Serializable
-data class ErrorResponse(
-    val error: String
-)

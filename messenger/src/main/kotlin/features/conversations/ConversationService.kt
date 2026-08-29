@@ -1,5 +1,10 @@
 package features.conversations
 
+import common.BadRequestException
+import common.ConflictException
+import common.ForbiddenException
+import common.NotFoundException
+
 class ConversationService(
     private val repository: ConversationRepository
 ) {
@@ -7,8 +12,8 @@ class ConversationService(
         userId: Long,
         otherUserId: Long
     ): Conversation {
-        require(userId != otherUserId) {
-            "You cannot create a conversation with yourself"
+        if (userId == otherUserId) {
+            throw BadRequestException("You cannot create a conversation with yourself")
         }
 
         repository.findBetween(userId, otherUserId)?.let { return it }
@@ -24,13 +29,13 @@ class ConversationService(
         title: String,
         memberUserIds: List<Long>
     ): Conversation {
-        require(title.isNotBlank()) {
-            "Group name cannot be empty"
+        if (title.isBlank()) {
+            throw BadRequestException("Group name cannot be empty")
         }
 
         val members = memberUserIds.filter { it != creatorId }.distinct()
-        require(members.isNotEmpty()) {
-            "Pick at least one friend to invite"
+        if (members.isEmpty()) {
+            throw BadRequestException("Pick at least one friend to invite")
         }
 
         return repository.createGroup(creatorId, title.trim(), members)
@@ -42,16 +47,16 @@ class ConversationService(
         inviteeId: Long
     ): Conversation {
         val conversation = repository.findById(conversationId)
-            ?: throw IllegalArgumentException("Conversation not found")
+            ?: throw NotFoundException("Conversation not found")
 
-        require(conversation.title != null) {
-            "Can only invite people to a group"
+        if (conversation.title == null) {
+            throw BadRequestException("Can only invite people to a group")
         }
-        require(isParticipant(conversationId, inviterId)) {
-            "You are not part of this group"
+        if (!isParticipant(conversationId, inviterId)) {
+            throw ForbiddenException("You are not part of this group")
         }
-        require(conversation.participants.none { it.userId == inviteeId }) {
-            "That person is already in this group"
+        if (conversation.participants.any { it.userId == inviteeId }) {
+            throw ConflictException("That person is already in this group")
         }
 
         repository.addParticipant(conversationId, inviteeId, ParticipantStatus.PENDING)
@@ -60,13 +65,13 @@ class ConversationService(
 
     fun acceptInvite(conversationId: Long, userId: Long) {
         if (!repository.updateParticipantStatus(conversationId, userId, ParticipantStatus.ACCEPTED)) {
-            throw IllegalArgumentException("Invite not found")
+            throw NotFoundException("Invite not found")
         }
     }
 
     fun declineInvite(conversationId: Long, userId: Long) {
         if (!repository.removeParticipant(conversationId, userId)) {
-            throw IllegalArgumentException("Invite not found")
+            throw NotFoundException("Invite not found")
         }
     }
 
@@ -96,7 +101,7 @@ class ConversationService(
 
     fun delete(conversationId: Long, userId: Long) {
         if (!isParticipant(conversationId, userId)) {
-            throw IllegalArgumentException("Conversation not found")
+            throw NotFoundException("Conversation not found")
         }
 
         repository.delete(conversationId)

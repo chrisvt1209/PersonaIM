@@ -1,5 +1,6 @@
 package features.friends
 
+import common.UnauthorizedException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -14,33 +15,21 @@ fun Route.friendRoutes(
     authenticate("auth-jwt") {
         route("/friends") {
             get {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.subject?.toLongOrNull()
-                
-                if (userId != null) {
-                    val friends = friendService.getFriends(userId)
-                    call.respond(friends)
-                } else {
-                    call.respond(HttpStatusCode.Unauthorized)
-                }
+                val userId = call.userId()
+                val friends = friendService.getFriends(userId)
+                call.respond(friends)
             }
 
             post {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.subject?.toLongOrNull()
-                
-                if (userId != null) {
-                    try {
-                        val request = call.receive<AddFriendRequest>()
-                        val response = friendService.addFriend(userId, request.friendUid)
-                        call.respond(HttpStatusCode.Created, response)
-                    } catch (e: IllegalArgumentException) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
-                    }
-                } else {
-                    call.respond(HttpStatusCode.Unauthorized)
-                }
+                val userId = call.userId()
+                val request = call.receive<AddFriendRequest>()
+                val response = friendService.addFriend(userId, request.friendUid)
+                call.respond(HttpStatusCode.Created, response)
             }
         }
     }
 }
+
+private fun ApplicationCall.userId(): Long =
+    principal<JWTPrincipal>()?.payload?.subject?.toLongOrNull()
+        ?: throw UnauthorizedException()

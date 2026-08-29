@@ -12,32 +12,15 @@ fun Route.authRoutes(
 ) {
     route("/auth") {
         post("/register") {
-            try {
-                val request = call.receive<RegisterRequest>()
-                val response = authService.register(request)
-                call.respond(
-                    HttpStatusCode.Created,
-                    response
-                )
-            } catch (e: IllegalArgumentException) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    mapOf("error" to e.message)
-                )
-            }
+            val request = call.receive<RegisterRequest>()
+            val response = authService.register(request)
+            call.respond(HttpStatusCode.Created, response)
         }
 
         post("/login") {
-            try {
-                val request = call.receive<LoginRequest>()
-                val response = authService.login(request)
-                call.respond(response)
-            } catch (e: IllegalArgumentException) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    mapOf("error" to e.message)
-                )
-            }
+            val request = call.receive<LoginRequest>()
+            val response = authService.login(request)
+            call.respond(response)
         }
     }
 }

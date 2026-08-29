@@ -5,18 +5,15 @@ import dev.compose.messenger.core.datastore.PreferencesManager
 import dev.compose.messenger.core.network.api.ChangePasswordRequest
 import dev.compose.messenger.core.network.api.UpdateProfileRequest
 import dev.compose.messenger.core.network.api.UserApi
-import dev.compose.messenger.feature.auth.data.ErrorResponse
+import dev.compose.messenger.core.network.toUserMessage
 import dev.compose.messenger.feature.profile.data.mapper.toDomain
 import dev.compose.messenger.feature.profile.data.mapper.toEntity
 import dev.compose.messenger.feature.profile.domain.User
-import io.ktor.client.call.body
-import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import java.io.IOException
 
 interface ProfileRepository {
     fun getCurrentUser(): Flow<User?>
@@ -49,7 +46,7 @@ class ProfileRepositoryImpl(
             dao.insertUser(dto.toEntity())
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -59,7 +56,7 @@ class ProfileRepositoryImpl(
             dao.insertUser(dto.toEntity())
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(Exception(e.toSafeMessage()))
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -68,14 +65,7 @@ class ProfileRepositoryImpl(
             api.changePassword(ChangePasswordRequest(currentPassword, newPassword))
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(Exception(e.toSafeMessage()))
+            Result.failure(Exception(e.toUserMessage()))
         }
-    }
-
-    private suspend fun Exception.toSafeMessage(): String = when (this) {
-        is ResponseException -> runCatching { response.body<ErrorResponse>().error }
-            .getOrDefault("Something went wrong. Please try again.")
-        is IOException -> "Can't reach server. Check your connection."
-        else -> "Something went wrong. Please try again."
     }
 }

@@ -4,6 +4,7 @@ import dev.compose.messenger.core.database.dao.ConversationDao
 import dev.compose.messenger.core.database.dao.MessageDao
 import dev.compose.messenger.core.datastore.PreferencesManager
 import dev.compose.messenger.core.network.api.ConversationApi
+import dev.compose.messenger.core.network.toUserMessage
 import dev.compose.messenger.feature.conversations.data.mapper.toDetail
 import dev.compose.messenger.feature.conversations.data.mapper.toDomain
 import dev.compose.messenger.feature.conversations.data.mapper.toEntity
@@ -51,8 +52,7 @@ class ConversationRepositoryImpl(
             dao.insertConversations(dtos.map { it.toEntity(userId) })
             Result.success(Unit)
         } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -63,7 +63,7 @@ class ConversationRepositoryImpl(
             dao.insertConversations(listOf(entity))
             Result.success(entity.toDomain())
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -74,7 +74,7 @@ class ConversationRepositoryImpl(
             dao.insertConversations(listOf(entity))
             Result.success(entity.toDomain())
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -86,7 +86,7 @@ class ConversationRepositoryImpl(
             dao.deleteConversation(conversationId)
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -97,7 +97,7 @@ class ConversationRepositoryImpl(
             val dto = api.getConversation(conversationId)
             Result.success(dto.toDetail(userId))
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -105,7 +105,7 @@ class ConversationRepositoryImpl(
         return try {
             Result.success(api.getInvites().map { it.toInvite() })
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -116,7 +116,7 @@ class ConversationRepositoryImpl(
             syncConversations()
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -126,7 +126,7 @@ class ConversationRepositoryImpl(
             api.declineInvite(conversationId)
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -136,7 +136,7 @@ class ConversationRepositoryImpl(
             api.invite(id, InviteRequest(userId))
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 }

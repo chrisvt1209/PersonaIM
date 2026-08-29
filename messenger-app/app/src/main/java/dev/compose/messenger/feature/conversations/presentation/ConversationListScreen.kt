@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +56,7 @@ import dev.compose.messenger.core.designsystem.util.personaBadgeBackground
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
 import dev.compose.messenger.feature.conversations.domain.Conversation
 import dev.compose.messenger.feature.conversations.domain.GroupInvite
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -78,6 +80,7 @@ fun ConversationListRoute(
         onAddClick = onAddClick,
         onDeleteClick = { conversation -> conversationPendingDelete = conversation },
         onInvitesClick = { showInvitesDialog = true },
+        onErrorShown = { viewModel.onEvent(ConversationEvent.ErrorShown) },
         season = season,
         onSeasonChange = onSeasonChange
     )
@@ -165,6 +168,7 @@ fun ConversationListScreen(
     onAddClick: () -> Unit,
     onDeleteClick: (Conversation) -> Unit,
     onInvitesClick: () -> Unit,
+    onErrorShown: () -> Unit = {},
     season: Season,
     onSeasonChange: (Season) -> Unit
 ) {
@@ -183,6 +187,10 @@ fun ConversationListScreen(
                 season = season,
                 onSeasonChange = onSeasonChange
             )
+
+            if (uiState.error != null) {
+                ErrorBanner(message = uiState.error, onDismissed = onErrorShown)
+            }
 
             if (uiState.conversations.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -217,6 +225,27 @@ fun ConversationListScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ErrorBanner(
+    message: String,
+    onDismissed: () -> Unit
+) {
+    LaunchedEffect(message) {
+        delay(4000)
+        onDismissed()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(PersonaRed.copy(alpha = 0.9f))
+            .clickable { onDismissed() }
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+    ) {
+        Text(text = message, color = Color.White, fontSize = 13.sp)
     }
 }
 

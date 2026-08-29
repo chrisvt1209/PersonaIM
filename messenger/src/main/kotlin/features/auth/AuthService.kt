@@ -2,6 +2,8 @@ package features.auth
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import common.ConflictException
+import common.UnauthorizedException
 import dev.sirhcvt.features.auth.AuthResponse
 import dev.sirhcvt.features.auth.LoginRequest
 import dev.sirhcvt.features.auth.RegisterRequest
@@ -15,7 +17,7 @@ class AuthService(
 ) {
     fun register(request: RegisterRequest): AuthResponse {
         if (userRepository.findByEmail(request.email) != null) {
-            throw IllegalArgumentException("Email is already registered")
+            throw ConflictException("Email is already registered")
         }
 
         val passwordHash = BCrypt.hashpw(
@@ -47,13 +49,13 @@ class AuthService(
 
     fun login(request: LoginRequest): AuthResponse {
         val user = userRepository.findByEmail(request.email)
-            ?: throw IllegalArgumentException("Invalid credentials")
+            ?: throw UnauthorizedException("Invalid credentials")
 
         val passwordHash = userRepository.getPasswordHash(request.email)
-            ?: throw IllegalArgumentException("Invalid credentials")
+            ?: throw UnauthorizedException("Invalid credentials")
 
         if (!BCrypt.checkpw(request.password, passwordHash)) {
-                throw IllegalArgumentException("Invalid credentials")
+                throw UnauthorizedException("Invalid credentials")
         }
 
         return AuthResponse(token = generateToken(user.id))

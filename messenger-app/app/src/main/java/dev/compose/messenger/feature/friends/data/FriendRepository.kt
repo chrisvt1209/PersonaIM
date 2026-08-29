@@ -3,6 +3,7 @@ package dev.compose.messenger.feature.friends.data
 import dev.compose.messenger.core.database.dao.FriendDao
 import dev.compose.messenger.core.network.api.AddFriendRequest
 import dev.compose.messenger.core.network.api.FriendApi
+import dev.compose.messenger.core.network.toUserMessage
 import dev.compose.messenger.feature.friends.data.mapper.toDomain
 import dev.compose.messenger.feature.friends.data.mapper.toEntity
 import dev.compose.messenger.feature.friends.domain.Friend
@@ -32,8 +33,7 @@ class FriendRepositoryImpl(
             dao.insertFriends(dtos.map { it.toEntity() })
             Result.success(Unit)
         } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -43,7 +43,7 @@ class FriendRepositoryImpl(
             dao.insertFriend(dto.toEntity())
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 }

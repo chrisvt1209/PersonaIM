@@ -1,5 +1,7 @@
 package features.messages
 
+import common.BadRequestException
+import common.ForbiddenException
 import features.conversations.ConversationService
 
 class MessageService(
@@ -11,17 +13,12 @@ class MessageService(
         senderId: Long,
         text: String
     ): Message {
-        require(text.isNotBlank()) {
-            "Message cannot be empty"
+        if (text.isBlank()) {
+            throw BadRequestException("Message cannot be empty")
         }
 
-        require(
-            conversationService.isParticipant(
-                conversationId,
-                senderId
-            )
-        ) {
-            "You are not a participant of this conversation"
+        if (!conversationService.isParticipant(conversationId, senderId)) {
+            throw ForbiddenException("You are not a participant of this conversation")
         }
 
         return repository.create(
@@ -35,13 +32,8 @@ class MessageService(
         conversationId: Long,
         userId: Long
     ): List<Message> {
-        require(
-            conversationService.isParticipant(
-                conversationId,
-                userId
-            )
-        ) {
-            "You are not a participant of this conversation"
+        if (!conversationService.isParticipant(conversationId, userId)) {
+            throw ForbiddenException("You are not a participant of this conversation")
         }
 
         return repository.findForConversation(conversationId)

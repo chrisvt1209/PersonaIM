@@ -60,11 +60,13 @@ class ConversationViewModel(
             is ConversationEvent.CreateConversation -> {
                 viewModelScope.launch {
                     repository.createConversation(event.userId)
+                        .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
                 }
             }
             is ConversationEvent.DeleteConversation -> {
                 viewModelScope.launch {
                     repository.deleteConversation(event.conversationId)
+                        .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
                 }
             }
             is ConversationEvent.CreateGroup -> {
@@ -79,16 +81,19 @@ class ConversationViewModel(
                         }
                 }
             }
+            ConversationEvent.ErrorShown -> _uiState.update { it.copy(error = null) }
             is ConversationEvent.AcceptInvite -> {
                 viewModelScope.launch {
                     repository.acceptInvite(event.conversationId)
-                    loadInvites()
+                        .onSuccess { loadInvites() }
+                        .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
                 }
             }
             is ConversationEvent.DeclineInvite -> {
                 viewModelScope.launch {
                     repository.declineInvite(event.conversationId)
-                    loadInvites()
+                        .onSuccess { loadInvites() }
+                        .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
                 }
             }
         }
@@ -102,7 +107,8 @@ data class ConversationUiState(
     val userAvatar: String = Avatar.Default.key,
     val invites: List<GroupInvite> = emptyList(),
     val isCreatingGroup: Boolean = false,
-    val createGroupError: String? = null
+    val createGroupError: String? = null,
+    val error: String? = null
 )
 
 sealed interface ConversationEvent {
@@ -113,4 +119,5 @@ sealed interface ConversationEvent {
     data class CreateGroup(val title: String, val memberUserIds: List<Long>) : ConversationEvent
     data class AcceptInvite(val conversationId: String) : ConversationEvent
     data class DeclineInvite(val conversationId: String) : ConversationEvent
+    data object ErrorShown : ConversationEvent
 }

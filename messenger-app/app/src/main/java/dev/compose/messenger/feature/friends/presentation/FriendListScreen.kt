@@ -24,6 +24,7 @@ import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
 import dev.compose.messenger.feature.friends.domain.Friend
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -55,6 +56,7 @@ fun FriendListRoute(
         onBackClick = onBackClick,
         onAddClick = { showAddDialog = true },
         onNewGroupClick = { showNewGroupDialog = true },
+        onErrorShown = { viewModel.onEvent(FriendEvent.ErrorShown) },
         season = season,
         onSeasonChange = onSeasonChange
     )
@@ -170,6 +172,7 @@ fun FriendListScreen(
     onBackClick: () -> Unit,
     onAddClick: () -> Unit,
     onNewGroupClick: () -> Unit,
+    onErrorShown: () -> Unit = {},
     season: Season,
     onSeasonChange: (Season) -> Unit
 ) {
@@ -200,6 +203,23 @@ fun FriendListScreen(
                     season = season,
                     onSeasonChange = onSeasonChange
                 )
+
+                if (uiState.error != null) {
+                    val error = uiState.error
+                    LaunchedEffect(error) {
+                        delay(4000)
+                        onErrorShown()
+                    }
+                    Text(
+                        text = error,
+                        color = Color.Red,
+                        fontSize = 13.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onErrorShown() }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
 
                 if (uiState.friends.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

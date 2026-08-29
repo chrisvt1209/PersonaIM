@@ -3,8 +3,10 @@ package common.websockets
 import features.conversations.ConversationService
 import features.messages.MessageService
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
+import io.ktor.websocket.*
 
 fun Route.messageWebSocketRoutes(
     messageService: MessageService,
@@ -16,15 +18,22 @@ fun Route.messageWebSocketRoutes(
             "/conversations/{conversationId}/ws"
         ) {
             val userId =
-                call.principal<UserIdPrincipal>()
-                    ?.name
-                    ?.toLong()
-                    ?: return@webSocket
+                call.principal<JWTPrincipal>()
+                    ?.payload?.subject?.toLongOrNull()
+
+            if (userId == null) {
+                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Unauthorized"))
+                return@webSocket
+            }
 
             val conversationId =
                 call.parameters["conversationId"]
                     ?.toLongOrNull()
-                    ?: return@webSocket
+
+            if (conversationId == null) {
+                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Invalid conversation id"))
+                return@webSocket
+            }
 
             MessageWebSocket(
                 messageService,

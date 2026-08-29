@@ -6,6 +6,7 @@ import dev.compose.messenger.core.network.WebSocketService
 import dev.compose.messenger.core.network.api.MessageApi
 import dev.compose.messenger.core.network.api.MessageDto
 import dev.compose.messenger.core.network.api.SendMessageRequest
+import dev.compose.messenger.core.network.toUserMessage
 import dev.compose.messenger.feature.chat.data.mapper.toDomain
 import dev.compose.messenger.feature.chat.data.mapper.toEntity
 import kotlinx.coroutines.CoroutineScope
@@ -56,7 +57,7 @@ class ChatRepositoryImpl(
             dao.insertMessages(dtos.map { it.toEntity() })
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 
@@ -67,7 +68,7 @@ class ChatRepositoryImpl(
             dao.insertMessages(listOf(dto.toEntity()))
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.toUserMessage()))
         }
     }
 }
