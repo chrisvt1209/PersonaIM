@@ -10,5 +10,6 @@ data class ConversationEntity(
     val isGroup: Boolean,
     val lastMessage: String?,
     val lastMessageTimestamp: String?,
-    val unreadCount: Int
+    val unreadCount: Int,
+    val participantIds: String
 )

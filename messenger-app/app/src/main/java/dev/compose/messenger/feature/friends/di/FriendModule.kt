@@ -8,5 +8,5 @@ import org.koin.dsl.module
 
 val friendModule = module {
     single<FriendRepository> { FriendRepositoryImpl(get(), get()) }
-    viewModel { FriendViewModel(get(), get()) }
+    viewModel { FriendViewModel(get(), get(), get()) }
 }

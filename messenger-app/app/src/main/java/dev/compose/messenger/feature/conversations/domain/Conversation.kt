@@ -10,7 +10,7 @@ data class Conversation(
     val lastMessage: String,
     val unreadCount: Int,
     val accentColor: Color,
-    val avatarUrls: List<Int> = emptyList() // Using resource IDs for now
+    val participantIds: List<Long> = emptyList()
 )
 
 data class Participant(

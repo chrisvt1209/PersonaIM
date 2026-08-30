@@ -14,7 +14,10 @@ fun ConversationDto.toEntity(currentUserId: Long?) = ConversationEntity(
     isGroup = title != null,
     lastMessage = lastMessage,
     lastMessageTimestamp = lastMessageTimestamp,
-    unreadCount = unreadCount
+    unreadCount = unreadCount,
+    participantIds = participants
+        .filter { it.userId != currentUserId }
+        .joinToString(",") { it.userId.toString() }
 )
 
 fun ConversationDto.toDetail(currentUserId: Long?) = ConversationDetail(
@@ -44,5 +47,5 @@ fun ConversationEntity.toDomain() = Conversation(
     lastMessage = lastMessage ?: "",
     unreadCount = unreadCount,
     accentColor = Color(0xFFC41001),
-    avatarUrls = emptyList()
+    participantIds = participantIds.split(",").mapNotNull { it.toLongOrNull() }
 )

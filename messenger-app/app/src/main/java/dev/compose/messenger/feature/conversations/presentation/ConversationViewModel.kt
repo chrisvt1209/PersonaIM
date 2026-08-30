@@ -36,6 +36,23 @@ class ConversationViewModel(
             _uiState.update { it.copy(isLoading = true) }
             repository.getConversations().collect { conversations ->
                 _uiState.update { it.copy(conversations = conversations, isLoading = false) }
+                loadParticipantAvatars(conversations)
+            }
+        }
+    }
+
+    private fun loadParticipantAvatars(conversations: List<Conversation>) {
+        viewModelScope.launch {
+            val knownIds = _uiState.value.participantAvatars.keys
+            val missingIds = conversations.flatMap { it.participantIds }.distinct().filter { it !in knownIds }
+            if (missingIds.isEmpty()) return@launch
+
+            val fetched = missingIds.mapNotNull { id ->
+                profileRepository.getUser(id).getOrNull()?.let { id to it.avatar }
+            }.toMap()
+
+            if (fetched.isNotEmpty()) {
+                _uiState.update { it.copy(participantAvatars = it.participantAvatars + fetched) }
             }
         }
     }
@@ -105,6 +122,7 @@ data class ConversationUiState(
     val isLoading: Boolean = false,
     val searchQuery: String = "",
     val userAvatar: String = Avatar.Default.key,
+    val participantAvatars: Map<Long, String> = emptyMap(),
     val invites: List<GroupInvite> = emptyList(),
     val isCreatingGroup: Boolean = false,
     val createGroupError: String? = null,

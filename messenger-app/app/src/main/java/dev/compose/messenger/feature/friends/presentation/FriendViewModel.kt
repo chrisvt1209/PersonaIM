@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dev.compose.messenger.feature.conversations.data.ConversationRepository
 import dev.compose.messenger.feature.friends.data.FriendRepository
 import dev.compose.messenger.feature.friends.domain.Friend
+import dev.compose.messenger.feature.profile.data.ProfileRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +14,8 @@ import kotlinx.coroutines.launch
 
 class FriendViewModel(
     private val repository: FriendRepository,
-    private val conversationRepository: ConversationRepository
+    private val conversationRepository: ConversationRepository,
+    private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FriendUiState())
@@ -35,6 +37,23 @@ class FriendViewModel(
             _uiState.update { it.copy(isLoading = true) }
             repository.getFriends().collect { friends ->
                 _uiState.update { it.copy(friends = friends, isLoading = false) }
+                loadFriendAvatars(friends)
+            }
+        }
+    }
+
+    private fun loadFriendAvatars(friends: List<Friend>) {
+        viewModelScope.launch {
+            val knownIds = _uiState.value.friendAvatars.keys
+            val missingIds = friends.map { it.id }.distinct().filter { it !in knownIds }
+            if (missingIds.isEmpty()) return@launch
+
+            val fetched = missingIds.mapNotNull { id ->
+                profileRepository.getUser(id).getOrNull()?.let { id to it.avatar }
+            }.toMap()
+
+            if (fetched.isNotEmpty()) {
+                _uiState.update { it.copy(friendAvatars = it.friendAvatars + fetched) }
             }
         }
     }
@@ -87,6 +106,7 @@ class FriendViewModel(
 
 data class FriendUiState(
     val friends: List<Friend> = emptyList(),
+    val friendAvatars: Map<Long, String> = emptyMap(),
     val isLoading: Boolean = false,
     val error: String? = null
 )

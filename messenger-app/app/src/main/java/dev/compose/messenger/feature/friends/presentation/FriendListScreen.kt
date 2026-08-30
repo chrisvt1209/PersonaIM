@@ -19,6 +19,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
+import dev.compose.messenger.core.common.model.Avatar
+import dev.compose.messenger.core.designsystem.component.PersonaAvatar
+import dev.compose.messenger.core.designsystem.component.randomAvatarColor
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
 import dev.compose.messenger.feature.friends.domain.Friend
@@ -233,6 +236,7 @@ fun FriendListScreen(
                         items(uiState.friends) { friend ->
                             FriendItem(
                                 friend = friend,
+                                avatarKey = uiState.friendAvatars[friend.id],
                                 onClick = { onFriendClick(friend.id) }
                             )
                         }
@@ -305,10 +309,11 @@ private fun FriendHeader(
 @Composable
 fun FriendItem(
     friend: Friend,
+    avatarKey: String?,
     onClick: () -> Unit
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -318,16 +323,26 @@ fun FriendItem(
             )
             .padding(horizontal = 18.dp, vertical = 16.dp),
     ) {
-        Text(
-            text = friend.username,
-            color = Color.White,
-            fontFamily = OptimaNova,
-            fontSize = 20.sp,
+        PersonaAvatar(
+            drawableRes = Avatar.fromKey(avatarKey.orEmpty()).drawableRes,
+            backgroundColor = randomAvatarColor(avatarKey.orEmpty()),
+            size = 64.dp,
         )
-        Text(
-            text = friend.email,
-            color = Color.White.copy(alpha = 0.7f),
-            fontSize = 14.sp,
-        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = friend.username,
+                color = Color.White,
+                fontFamily = OptimaNova,
+                fontSize = 20.sp,
+            )
+            Text(
+                text = friend.email,
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 14.sp,
+            )
+        }
     }
 }

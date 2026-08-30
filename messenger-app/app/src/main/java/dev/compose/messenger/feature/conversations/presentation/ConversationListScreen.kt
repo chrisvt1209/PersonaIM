@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -40,7 +41,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.Avatar
+import dev.compose.messenger.core.designsystem.component.PersonaAvatar
+import dev.compose.messenger.core.designsystem.component.randomAvatarColor
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.designsystem.util.personaBadgeBackground
@@ -205,6 +211,7 @@ fun ConversationListScreen(
                     items(uiState.conversations) { conversation ->
                         ConversationItem(
                             conversation = conversation,
+                            participantAvatars = uiState.participantAvatars,
                             onClick = { onConversationClick(conversation.id) },
                             onDeleteClick = { onDeleteClick(conversation) }
                         )
@@ -330,6 +337,7 @@ private fun PersonaListHeader(
 @Composable
 private fun ConversationItem(
     conversation: Conversation,
+    participantAvatars: Map<Long, String>,
     onClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
@@ -340,8 +348,8 @@ private fun ConversationItem(
         label = "conversation-scale",
     )
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    Row(
+        verticalAlignment = Alignment.Top,
         modifier = Modifier
             .fillMaxWidth()
             .scale(scale)
@@ -356,56 +364,123 @@ private fun ConversationItem(
             )
             .padding(horizontal = 18.dp, vertical = 16.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = conversation.title,
-                color = Color.White,
-                fontFamily = OptimaNova,
-                fontSize = 20.sp,
-                modifier = Modifier.weight(1f)
-            )
+        ParticipantAvatars(
+            participantIds = conversation.participantIds,
+            avatars = participantAvatars,
+            modifier = Modifier.padding(top = 2.dp)
+        )
 
-            if (conversation.unreadCount > 0) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .personaBadgeBackground(conversation.accentColor)
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                ) {
-                    Text(
-                        text = "${conversation.unreadCount} new",
-                        color = Color.Black,
-                        fontFamily = OptimaNova,
-                        fontSize = 13.sp,
+        Spacer(modifier = Modifier.width(14.dp))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.weight(1f),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = conversation.title,
+                    color = Color.White,
+                    fontFamily = OptimaNova,
+                    fontSize = 20.sp,
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (conversation.unreadCount > 0) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .personaBadgeBackground(conversation.accentColor)
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    ) {
+                        Text(
+                            text = "${conversation.unreadCount} new",
+                            color = Color.Black,
+                            fontFamily = OptimaNova,
+                            fontSize = 13.sp,
+                        )
+                    }
+                }
+
+                IconButton(onClick = onDeleteClick, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete conversation",
+                        tint = Color.White.copy(alpha = 0.7f)
                     )
                 }
             }
 
-            IconButton(onClick = onDeleteClick, modifier = Modifier.size(24.dp)) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete conversation",
-                    tint = Color.White.copy(alpha = 0.7f)
-                )
-            }
+            Text(
+                text = conversation.participantNames,
+                color = Color.White.copy(alpha = 0.82f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = conversation.lastMessage,
+                color = Color.White.copy(alpha = 0.82f),
+                maxLines = 2,
+                fontSize = 13.sp,
+                modifier = Modifier.height(34.dp),
+            )
         }
+    }
+}
 
-        Text(
-            text = conversation.participantNames,
-            color = Color.White.copy(alpha = 0.82f),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = conversation.lastMessage,
-            color = Color.White.copy(alpha = 0.82f),
-            maxLines = 2,
-            fontSize = 13.sp,
-            modifier = Modifier.height(34.dp),
-        )
+private val AvatarChipSize = 56.dp
+private val AvatarChipAspect = 110f / 90f
+private val AvatarChipWidth = AvatarChipSize * AvatarChipAspect
+private val AvatarChipOverlap = 34.dp
+private const val MaxVisibleAvatars = 3
+
+@Composable
+private fun ParticipantAvatars(
+    participantIds: List<Long>,
+    avatars: Map<Long, String>,
+    modifier: Modifier = Modifier,
+) {
+    if (participantIds.isEmpty()) return
+
+    val visibleIds = participantIds.take(MaxVisibleAvatars)
+    val hasOverflow = participantIds.size > MaxVisibleAvatars
+    val clusterWidth = AvatarChipWidth + AvatarChipOverlap * (visibleIds.size - 1)
+
+    Box(
+        modifier = modifier
+            .width(clusterWidth)
+            .height(AvatarChipSize)
+    ) {
+        visibleIds.forEachIndexed { index, userId ->
+            val isFadedOverflowChip = hasOverflow && index == visibleIds.lastIndex
+            val avatarKey = avatars[userId].orEmpty()
+
+            PersonaAvatar(
+                drawableRes = Avatar.fromKey(avatarKey).drawableRes,
+                backgroundColor = randomAvatarColor(avatarKey),
+                size = AvatarChipSize,
+                modifier = Modifier
+                    .offset(x = AvatarChipOverlap * index)
+                    .then(
+                        if (isFadedOverflowChip) {
+                            Modifier.drawWithContent {
+                                drawContent()
+                                drawRect(
+                                    brush = Brush.horizontalGradient(
+                                        0f to Color.Transparent,
+                                        1f to Color.Black,
+                                    ),
+                                    blendMode = BlendMode.DstOut,
+                                )
+                            }
+                        } else {
+                            Modifier
+                        }
+                    )
+            )
+        }
     }
 }
