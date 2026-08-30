@@ -18,5 +18,6 @@ fun MessageDto.toEntity() = MessageEntity(
 fun MessageEntity.toDomain() = Message(
     id = id,
     sender = Sender.fromId(senderId),
-    text = text
+    text = text,
+    timestamp = timestamp
 )

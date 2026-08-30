@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
+import dev.compose.messenger.core.common.util.formatMessageTimestamp
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.util.asOutline
 import dev.compose.messenger.feature.chat.presentation.ChatEntry
@@ -49,13 +50,23 @@ private fun EntryItem(
     entry: ChatEntry,
     modifier: Modifier = Modifier,
 ) {
-    EntryLayout(
-        avatar = { Avatar(entry) },
-        textBox = { TextBox(entry) },
+    Box(
         modifier = Modifier
             .padding(horizontal = 8.dp)
             .then(modifier)
-    )
+    ) {
+        Timestamp(
+            entry = entry,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .offset(x = 124.dp, y = (-12).dp)
+        )
+
+        EntryLayout(
+            avatar = { Avatar(entry) },
+            textBox = { TextBox(entry) },
+        )
+    }
 }
 
 @Composable
@@ -108,16 +119,23 @@ private fun ReplyItem(
             .padding(horizontal = 8.dp)
             .then(modifier)
     ) {
+        Timestamp(
+            entry = entry,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .offset(x = (-8).dp, y = (-12).dp)
+        )
+
         Text(
             text = entry.message.text,
-            color = Color.Black,
+            color = Color.White,
             fontFamily = OptimaNova,
-            fontSize = 18.sp,
+            fontSize = 15.sp,
             modifier = Modifier
-                .widthIn(max = 280.dp)
+                .widthIn(max = 240.dp)
                 .drawWithCache {
-                    val outerBox = asOutline(replyOuterBox())
-                    val innerBox = asOutline(replyInnerBox())
+                    val outerBox = asOutline(ownOuterBox())
+                    val innerBox = asOutline(ownInnerBox())
 
                     onDrawBehind {
                         scale(
@@ -131,9 +149,20 @@ private fun ReplyItem(
                     }
                 }
                 .alpha(entry.messageTextAlpha.value)
-                .padding(start = 28.dp, top = 16.dp, end = 44.dp, bottom = 16.dp)
+                .padding(start = 28.dp, top = 17.dp, end = 36.dp, bottom = 17.dp)
         )
     }
+}
+
+@Composable
+private fun Timestamp(entry: ChatEntry, modifier: Modifier = Modifier) {
+    Text(
+        text = formatMessageTimestamp(entry.message.timestamp),
+        color = Color.White.copy(alpha = 0.75f),
+        fontFamily = OptimaNova,
+        fontSize = 11.sp,
+        modifier = modifier.alpha(entry.messageTextAlpha.value)
+    )
 }
 
 @Composable
@@ -237,18 +266,20 @@ private fun Density.innerBox(): Shape = GenericShape { size, _ ->
     close()
 }
 
-private fun Density.replyOuterBox(): Shape = GenericShape { size, _ ->
-    moveTo(0f, 6.dp.toPx())
-    lineTo(size.width - 22.dp.toPx(), 0f)
-    lineTo(size.width, size.height - 12.dp.toPx())
-    lineTo(14.dp.toPx(), size.height)
+// Mirror image of outerBox()/innerBox() (own messages have no avatar to point a stem at),
+// scaled down ~15% so the reply bubble reads as slightly smaller than the other party's.
+private fun Density.ownOuterBox(): Shape = GenericShape { size, _ ->
+    moveTo(size.width - 26.9.dp.toPx(), 2.6.dp.toPx())
+    lineTo(0f, 0f)
+    lineTo(19.6.dp.toPx(), size.height)
+    lineTo(size.width - 13.3.dp.toPx(), size.height - 6.8.dp.toPx())
     close()
 }
 
-private fun Density.replyInnerBox(): Shape = GenericShape { size, _ ->
-    moveTo(10.dp.toPx(), 10.dp.toPx())
-    lineTo(size.width - 26.dp.toPx(), 6.dp.toPx())
-    lineTo(size.width - 10.dp.toPx(), size.height - 18.dp.toPx())
-    lineTo(20.dp.toPx(), size.height - 8.dp.toPx())
+private fun Density.ownInnerBox(): Shape = GenericShape { size, _ ->
+    moveTo(size.width - 28.1.dp.toPx(), 6.5.dp.toPx())
+    lineTo(11.1.dp.toPx(), 3.1.dp.toPx())
+    lineTo(21.8.dp.toPx(), size.height - 3.9.dp.toPx())
+    lineTo(size.width - 17.3.dp.toPx(), size.height - 10.2.dp.toPx())
     close()
 }

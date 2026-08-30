@@ -8,6 +8,7 @@ data class Message(
     val id: Long,
     val sender: Sender,
     val text: String,
+    val timestamp: String,
 )
 
 enum class Sender(
