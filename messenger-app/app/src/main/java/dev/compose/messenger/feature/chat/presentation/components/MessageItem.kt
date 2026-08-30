@@ -36,18 +36,20 @@ import dev.compose.messenger.feature.chat.presentation.TranscriptSizes
 @Composable
 fun MessageItem(
     entry: ChatEntry,
+    avatarKey: String?,
     modifier: Modifier = Modifier
 ) {
-    if (entry.message.sender.displayName == "You") {
+    if (entry.message.isFromMe) {
         ReplyItem(entry, modifier)
     } else {
-        EntryItem(entry, modifier)
+        EntryItem(entry, avatarKey, modifier)
     }
 }
 
 @Composable
 private fun EntryItem(
     entry: ChatEntry,
+    avatarKey: String?,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -63,7 +65,7 @@ private fun EntryItem(
         )
 
         EntryLayout(
-            avatar = { Avatar(entry) },
+            avatar = { Avatar(entry, avatarKey) },
             textBox = { TextBox(entry) },
         )
     }

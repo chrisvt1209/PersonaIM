@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import dev.compose.messenger.core.common.model.Message
-import dev.compose.messenger.core.common.model.Sender
 import dev.compose.messenger.feature.chat.presentation.TranscriptSizes.MaxLineShift
 import dev.compose.messenger.feature.chat.presentation.TranscriptSizes.MaxLineWidth
 import dev.compose.messenger.feature.chat.presentation.TranscriptSizes.MinLineShift
@@ -143,24 +142,20 @@ class TranscriptState internal constructor(
     ): EntryState = with(density) {
         val width = randomBetween(MinLineWidth.toPx(), MaxLineWidth.toPx())
 
-        val lineCoordinates = when (message.sender) {
-            Sender.Ren -> {
-                val leftX = RenMessageCenter.x.toPx() - (width / 2f)
-                val y = RenMessageCenter.y.toPx()
-                LineCoordinates(
-                    leftPoint = Offset(leftX, y),
-                    rightPoint = Offset(leftX + width, y),
-                )
-            }
-
-            else -> {
-                val leftX = (TranscriptSizes.AvatarSize.width.toPx() / 2f) - (width / 2f)
-                val y = TranscriptSizes.AvatarSize.height.toPx() / 2f
-                LineCoordinates(
-                    leftPoint = Offset(leftX, y),
-                    rightPoint = Offset(leftX + width, y),
-                )
-            }
+        val lineCoordinates = if (message.isFromMe) {
+            val leftX = RenMessageCenter.x.toPx() - (width / 2f)
+            val y = RenMessageCenter.y.toPx()
+            LineCoordinates(
+                leftPoint = Offset(leftX, y),
+                rightPoint = Offset(leftX + width, y),
+            )
+        } else {
+            val leftX = (TranscriptSizes.AvatarSize.width.toPx() / 2f) - (width / 2f)
+            val y = TranscriptSizes.AvatarSize.height.toPx() / 2f
+            LineCoordinates(
+                leftPoint = Offset(leftX, y),
+                rightPoint = Offset(leftX + width, y),
+            )
         }
 
         return EntryState(
@@ -251,9 +246,10 @@ class TranscriptState internal constructor(
             entryState.position > 0 -> randomBetween(MinLineShift.toPx(), MaxLineShift.toPx()) * direction
             else -> 0f
         }
-        val horizontalOffset = when (entryState.message.sender) {
-            Sender.Ren -> Offset.Zero
-            else -> Offset(horizontalShift, 0f)
+        val horizontalOffset = if (entryState.message.isFromMe) {
+            Offset.Zero
+        } else {
+            Offset(horizontalShift, 0f)
         }
 
         entryState.lineCoordinates = entryState.lineCoordinates.copy(
@@ -286,25 +282,21 @@ object TranscriptSizes {
     val MaxLineWidth = 60.dp
 
     fun getTopDrawingOffset(scope: CacheDrawScope, entry: ChatEntry): Offset = with(scope) {
-        return when (entry.message.sender) {
-            Sender.Ren -> {
-                val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
-                Offset(x = horizontalShift, y = 0f)
-            }
-
-            else -> Offset.Zero
+        return if (entry.message.isFromMe) {
+            val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
+            Offset(x = horizontalShift, y = 0f)
+        } else {
+            Offset.Zero
         }
     }
 
     fun getBottomDrawingOffset(scope: CacheDrawScope, entry: ChatEntry): Offset = with(scope) {
         val verticalShift = size.height + EntrySpacing.toPx()
-        return when (entry.message.sender) {
-            Sender.Ren -> {
-                val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
-                Offset(x = horizontalShift, y = verticalShift)
-            }
-
-            else -> Offset(x = 0f, y = verticalShift)
+        return if (entry.message.isFromMe) {
+            val horizontalShift = size.width - (RenMessageCenter.x.toPx() * 2f)
+            Offset(x = horizontalShift, y = verticalShift)
+        } else {
+            Offset(x = 0f, y = verticalShift)
         }
     }
 }

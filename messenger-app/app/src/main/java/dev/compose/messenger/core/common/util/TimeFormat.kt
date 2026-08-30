@@ -1,46 +1,35 @@
 package dev.compose.messenger.core.common.util
 
-import java.text.ParsePosition
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 
-// Carries its own offset (e.g. "...Z" or "...+02:00") - trust it, no UTC assumption needed.
-private val zonedPatterns = listOf(
-    "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
-    "yyyy-MM-dd'T'HH:mm:ssXXX",
+// Accepts "yyyy-MM-dd'T'HH:mm:ss", an optional fractional-seconds part of any digit count,
+// and an optional "Z" / "+HH:mm" / "+HHmm" offset. Fraction digit count varies by backend
+// (millis vs. micros), which is exactly what tripped up matching a fixed-width pattern before.
+private val TIMESTAMP_PATTERN = Regex(
+    """^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?\s*(Z|[+-]\d{2}:?\d{2})?$"""
 )
 
-// No offset in the string - messages are stored in UTC, so assume UTC.
-private val naivePatterns = listOf(
-    "yyyy-MM-dd'T'HH:mm:ss.SSS",
-    "yyyy-MM-dd'T'HH:mm:ss",
-)
-
-/** Formats a server timestamp into a short "HH:mm" label in the device's local time zone. */
+/** Formats a server timestamp (stored in UTC) into a short "HH:mm" label in the device's local time zone. */
 fun formatMessageTimestamp(rawTimestamp: String): String {
-    zonedPatterns.forEach { pattern ->
-        parseStrict(pattern, rawTimestamp, zone = null)?.let { return formatLocal(it) }
-    }
-    naivePatterns.forEach { pattern ->
-        parseStrict(pattern, rawTimestamp, zone = TimeZone.getTimeZone("UTC"))?.let { return formatLocal(it) }
-    }
-    return rawTimestamp
-}
+    val groups = TIMESTAMP_PATTERN.find(rawTimestamp.trim())?.groupValues ?: return rawTimestamp
 
-private fun parseStrict(pattern: String, raw: String, zone: TimeZone?): Date? {
-    val format = SimpleDateFormat(pattern, Locale.US)
-    if (zone != null) format.timeZone = zone
-    val position = ParsePosition(0)
-    val parsed = format.parse(raw, position) ?: return null
-    // SimpleDateFormat.parse ignores trailing unmatched text by default; require a full match
-    // so an earlier, looser pattern can't silently swallow a zone suffix it doesn't understand.
-    return if (position.index == raw.length) parsed else null
-}
+    val sourceZone = when (val offset = groups[7]) {
+        "", "Z" -> TimeZone.getTimeZone("UTC")
+        else -> {
+            val normalized = if (offset.contains(':')) offset else "${offset.take(3)}:${offset.substring(3)}"
+            TimeZone.getTimeZone("GMT$normalized")
+        }
+    }
 
-private fun formatLocal(date: Date): String {
+    val instantMillis = Calendar.getInstance(sourceZone).apply {
+        clear()
+        set(groups[1].toInt(), groups[2].toInt() - 1, groups[3].toInt(), groups[4].toInt(), groups[5].toInt(), groups[6].toInt())
+    }.timeInMillis
+
     val outputFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
     outputFormat.timeZone = TimeZone.getDefault()
-    return outputFormat.format(date)
+    return outputFormat.format(instantMillis)
 }

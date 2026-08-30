@@ -9,6 +9,7 @@ import dev.compose.messenger.feature.conversations.data.ConversationRepository
 import dev.compose.messenger.feature.conversations.domain.Participant
 import dev.compose.messenger.feature.friends.data.FriendRepository
 import dev.compose.messenger.feature.friends.domain.Friend
+import dev.compose.messenger.feature.profile.data.ProfileRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +20,7 @@ class ChatViewModel(
     private val repository: ChatRepository,
     private val conversationRepository: ConversationRepository,
     private val friendRepository: FriendRepository,
+    private val profileRepository: ProfileRepository,
     private val conversationId: String
 ) : ViewModel() {
 
@@ -44,7 +46,19 @@ class ChatViewModel(
                         participants = detail.participants
                     )
                 }
+                loadParticipantAvatars(detail.participants)
             }
+        }
+    }
+
+    private fun loadParticipantAvatars(participants: List<Participant>) {
+        viewModelScope.launch {
+            val avatars = participants.mapNotNull { participant ->
+                profileRepository.getUser(participant.userId).getOrNull()?.let { user ->
+                    participant.userId to user.avatar
+                }
+            }.toMap()
+            _uiState.update { it.copy(participantAvatars = avatars) }
         }
     }
 
@@ -96,6 +110,7 @@ data class ChatUiState(
     val conversationTitle: String = "Chat",
     val isGroup: Boolean = false,
     val participants: List<Participant> = emptyList(),
+    val participantAvatars: Map<Long, String> = emptyMap(),
     val availableFriendsToInvite: List<Friend> = emptyList(),
     val inviteError: String? = null,
     val sendError: String? = null

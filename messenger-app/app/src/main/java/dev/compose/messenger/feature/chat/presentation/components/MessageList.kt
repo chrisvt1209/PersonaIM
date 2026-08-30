@@ -28,6 +28,7 @@ import kotlinx.collections.immutable.ImmutableList
 fun MessageList(
     entries: ImmutableList<ChatEntry>,
     showTypingIndicator: Boolean,
+    participantAvatars: Map<Long, String>,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -69,6 +70,7 @@ fun MessageList(
         ) { index, entry ->
             MessageItem(
                 entry = entry,
+                avatarKey = participantAvatars[entry.message.senderId],
                 modifier = Modifier.drawConnectingLine(entry, entries.getOrNull(index + 1))
             )
         }

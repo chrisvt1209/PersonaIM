@@ -20,6 +20,7 @@ interface ProfileRepository {
     suspend fun updateProfile(username: String, email: String, avatar: String): Result<Unit>
     suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
     suspend fun syncProfile(): Result<Unit>
+    suspend fun getUser(id: Long): Result<User>
 }
 
 class ProfileRepositoryImpl(
@@ -65,6 +66,17 @@ class ProfileRepositoryImpl(
             api.changePassword(ChangePasswordRequest(currentPassword, newPassword))
             Result.success(Unit)
         } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage()))
+        }
+    }
+
+    override suspend fun getUser(id: Long): Result<User> {
+        return try {
+            val dto = api.getUser(id)
+            dao.insertUser(dto.toEntity())
+            Result.success(dto.toEntity().toDomain())
+        } catch (e: Exception) {
+            dao.getUserByIdOnce(id)?.let { return Result.success(it.toDomain()) }
             Result.failure(Exception(e.toUserMessage()))
         }
     }

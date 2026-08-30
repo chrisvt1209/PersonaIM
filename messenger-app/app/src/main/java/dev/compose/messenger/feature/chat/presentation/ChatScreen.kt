@@ -140,6 +140,7 @@ fun ChatScreen(
                 MessageList(
                     entries = transcriptState.entries,
                     showTypingIndicator = uiState.typingSender != null,
+                    participantAvatars = uiState.participantAvatars,
                     modifier = Modifier.fillMaxSize()
                 )
             }

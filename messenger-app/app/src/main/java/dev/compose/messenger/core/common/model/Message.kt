@@ -7,8 +7,10 @@ import dev.compose.messenger.R
 data class Message(
     val id: Long,
     val sender: Sender,
+    val senderId: Long,
     val text: String,
     val timestamp: String,
+    val isFromMe: Boolean,
 )
 
 enum class Sender(

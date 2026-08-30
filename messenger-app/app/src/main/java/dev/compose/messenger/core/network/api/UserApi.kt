@@ -47,4 +47,8 @@ class UserApi(private val client: HttpClient) {
             setBody(request)
         }
     }
+
+    suspend fun getUser(id: Long): UserDto {
+        return client.get("users/$id").body()
+    }
 }

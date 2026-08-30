@@ -5,19 +5,21 @@ import dev.compose.messenger.core.common.model.Sender
 import dev.compose.messenger.core.database.entity.MessageEntity
 import dev.compose.messenger.core.network.api.MessageDto
 
-fun MessageDto.toEntity() = MessageEntity(
+fun MessageDto.toEntity(currentUserId: Long?) = MessageEntity(
     id = id,
     conversationId = conversationId,
     senderId = senderId,
     senderName = "", // Fetch from somewhere if needed
     text = text,
     timestamp = sentAt,
-    isFromMe = false // Determine from current user ID
+    isFromMe = currentUserId != null && senderId == currentUserId
 )
 
 fun MessageEntity.toDomain() = Message(
     id = id,
     sender = Sender.fromId(senderId),
+    senderId = senderId,
     text = text,
-    timestamp = timestamp
+    timestamp = timestamp,
+    isFromMe = isFromMe
 )

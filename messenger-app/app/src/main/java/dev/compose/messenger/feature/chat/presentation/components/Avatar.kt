@@ -20,12 +20,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import dev.compose.messenger.core.common.model.Avatar
+import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.feature.chat.presentation.ChatEntry
 import dev.compose.messenger.feature.chat.presentation.TranscriptSizes
 import dev.compose.messenger.core.designsystem.util.asOutline
 
 @Composable
-fun Avatar(entry: ChatEntry) {
+fun Avatar(entry: ChatEntry, avatarKey: String?) {
+    val avatar = Avatar.fromKey(avatarKey.orEmpty())
+
     Box(
         modifier = Modifier
             .size(TranscriptSizes.AvatarSize)
@@ -33,25 +37,23 @@ fun Avatar(entry: ChatEntry) {
             .drawBehind {
                 drawOutline(asOutline(avatarBlackBox()), Color.Black)
                 drawOutline(asOutline(avatarWhiteBox()), Color.White)
-                drawOutline(asOutline(avatarColoredBox()), entry.message.sender.color)
+                drawOutline(asOutline(avatarColoredBox()), PersonaRed)
             }
             .clip(with(LocalDensity.current) { avatarClipBox() })
     ) {
-        if (entry.message.sender.image != -1) {
-            Image(
-                painter = painterResource(entry.message.sender.image),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(80.dp)
-                    .align(Alignment.TopEnd)
-                    .padding(top = 4.dp, end = 8.dp)
-                    .graphicsLayer {
-                        transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 1.15f)
-                        scaleX = entry.avatarForegroundScale.value
-                        scaleY = entry.avatarForegroundScale.value
-                    }
-            )
-        }
+        Image(
+            painter = painterResource(avatar.drawableRes),
+            contentDescription = null,
+            modifier = Modifier
+                .size(80.dp)
+                .align(Alignment.TopEnd)
+                .padding(top = 4.dp, end = 8.dp)
+                .graphicsLayer {
+                    transformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 1.15f)
+                    scaleX = entry.avatarForegroundScale.value
+                    scaleY = entry.avatarForegroundScale.value
+                }
+        )
     }
 }
 
