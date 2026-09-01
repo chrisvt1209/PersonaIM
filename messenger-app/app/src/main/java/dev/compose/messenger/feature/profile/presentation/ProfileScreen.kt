@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.core.designsystem.component.BackgroundParticles
 import dev.compose.messenger.R
+import dev.compose.messenger.core.common.model.AppBackgroundColor
 import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.core.designsystem.component.PersonaButton
 import dev.compose.messenger.core.designsystem.component.PersonaTextField
@@ -53,9 +54,11 @@ import dev.compose.messenger.feature.profile.domain.User
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import dev.compose.messenger.core.designsystem.component.BackgroundColorMenu
 import dev.compose.messenger.core.designsystem.component.SeasonMenu
 import org.koin.androidx.compose.koinViewModel
 
@@ -65,6 +68,8 @@ fun ProfileRoute(
     onBackClick: () -> Unit,
     season: Season,
     onSeasonChange: (Season) -> Unit,
+    backgroundColor: AppBackgroundColor,
+    onBackgroundColorChange: (AppBackgroundColor) -> Unit,
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -79,7 +84,9 @@ fun ProfileRoute(
         onEditClick = { showEditDialog = true },
         onChangePasswordClick = { showPasswordDialog = true },
         season = season,
-        onSeasonChange = onSeasonChange
+        onSeasonChange = onSeasonChange,
+        backgroundColor = backgroundColor,
+        onBackgroundColorChange = onBackgroundColorChange
     )
 
     val currentUser = uiState.user
@@ -120,7 +127,9 @@ fun ProfileScreen(
     onEditClick: () -> Unit,
     onChangePasswordClick: () -> Unit,
     season: Season,
-    onSeasonChange: (Season) -> Unit
+    onSeasonChange: (Season) -> Unit,
+    backgroundColor: AppBackgroundColor,
+    onBackgroundColorChange: (AppBackgroundColor) -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -132,7 +141,8 @@ fun ProfileScreen(
             ProfileHeader(
                 onBackClick = onBackClick,
                 season = season,
-                onSeasonChange = onSeasonChange
+                onSeasonChange = onSeasonChange,
+                onBackgroundColorChange = onBackgroundColorChange
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -236,7 +246,8 @@ fun ProfileScreen(
 private fun ProfileHeader(
     onBackClick: () -> Unit,
     season: Season,
-    onSeasonChange: (Season) -> Unit
+    onSeasonChange: (Season) -> Unit,
+    onBackgroundColorChange: (AppBackgroundColor) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -278,6 +289,18 @@ private fun ProfileHeader(
                 )
             },
             onSeasonChange = onSeasonChange
+        )
+
+        BackgroundColorMenu(
+            hostElement = {
+                Icon(
+                    imageVector = Icons.Default.FormatColorFill,
+                    contentDescription = "Change Background Color",
+                    tint = Color.White,
+                    modifier = Modifier.padding(top = 12.dp).size(28.dp)
+                )
+            },
+            onBackgroundColorChange = onBackgroundColorChange
         )
     }
 }

@@ -18,7 +18,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import dev.compose.messenger.core.designsystem.component.BackgroundParticles
-import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.designsystem.theme.PersonaTheme
 import dev.compose.messenger.core.navigation.MessengerNavHost
 import org.koin.androidx.compose.koinViewModel
@@ -31,12 +30,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: MainViewModel = koinViewModel()
             val season by viewModel.season.collectAsState()
+            val backgroundColor by viewModel.backgroundColor.collectAsState()
 
             PersonaTheme {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(color = PersonaRed)
+                        .background(color = backgroundColor.color)
                 ) {
                     BackgroundParticles(season)
 
@@ -52,6 +52,8 @@ class MainActivity : ComponentActivity() {
                     MessengerNavHost(
                         season = season,
                         onSeasonChange = viewModel::changeSeason,
+                        backgroundColor = backgroundColor,
+                        onBackgroundColorChange = viewModel::changeBackgroundColor,
                         modifier = Modifier.fillMaxSize()
                     )
                 }

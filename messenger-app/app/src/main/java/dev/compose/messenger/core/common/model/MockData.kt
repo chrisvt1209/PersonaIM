@@ -3,12 +3,26 @@ package dev.compose.messenger.core.common.model
 import androidx.compose.ui.graphics.Color
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.designsystem.theme.AnnColor
+import dev.compose.messenger.core.designsystem.theme.RyujiColor
 import dev.compose.messenger.core.designsystem.theme.YusukeColor
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 enum class Season {
     NONE, SPRING, WINTER
+}
+
+enum class AppBackgroundColor(val displayName: String, val color: Color) {
+    RED("Red", PersonaRed),
+    PINK("Pink", AnnColor),
+    YELLOW("Yellow", RyujiColor),
+    BLUE("Blue", YusukeColor);
+
+    companion object {
+        val Default = RED
+
+        fun fromKey(key: String): AppBackgroundColor = entries.find { it.name == key } ?: Default
+    }
 }
 
 data class MessageTemplate(

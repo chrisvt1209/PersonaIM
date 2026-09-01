@@ -1,14 +1,16 @@
 package dev.compose.messenger.core.designsystem.component
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.GenericShape
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,21 +18,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
-import dev.compose.messenger.core.common.model.Season
-import dev.compose.messenger.core.designsystem.theme.OptimaNova
-import dev.compose.messenger.core.designsystem.util.asOutline
+import dev.compose.messenger.core.common.model.AppBackgroundColor
 
 @Composable
-fun SeasonMenu(
+fun BackgroundColorMenu(
     hostElement: @Composable () -> Unit,
-    onSeasonChange: (Season) -> Unit,
+    onBackgroundColorChange: (AppBackgroundColor) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showPopup by remember { mutableStateOf(false) }
@@ -54,34 +52,34 @@ fun SeasonMenu(
             hostElement()
         }
 
-        SeasonPopupMenu(
+        BackgroundColorPopupMenu(
             show = showPopup,
             onDismissRequest = { showPopup = false },
-            onSeasonChange = onSeasonChange,
+            onBackgroundColorChange = onBackgroundColorChange,
         )
     }
 }
 
 @Composable
-private fun SeasonPopupMenu(
+private fun BackgroundColorPopupMenu(
     show: Boolean,
     onDismissRequest: () -> Unit,
-    onSeasonChange: (Season) -> Unit,
+    onBackgroundColorChange: (AppBackgroundColor) -> Unit,
 ) {
     if (!show) return
 
     Popup(onDismissRequest = onDismissRequest) {
-        Column(
+        Row(
             modifier = Modifier
                 .menuBackground()
-                .padding(horizontal = 40.dp, vertical = 12.dp)
+                .padding(horizontal = 40.dp, vertical = 16.dp)
         ) {
-            Season.entries.forEach { season ->
-                SeasonOption(
-                    season = season,
+            AppBackgroundColor.entries.forEach { backgroundColor ->
+                BackgroundColorOption(
+                    backgroundColor = backgroundColor,
                     onClick = {
                         onDismissRequest()
-                        onSeasonChange(season)
+                        onBackgroundColorChange(backgroundColor)
                     },
                 )
             }
@@ -90,35 +88,14 @@ private fun SeasonPopupMenu(
 }
 
 @Composable
-private fun SeasonOption(season: Season, onClick: () -> Unit) {
-    Text(
-        text = season.name.lowercase().replaceFirstChar { it.uppercaseChar() },
-        fontSize = 30.sp,
-        fontFamily = OptimaNova,
-        color = Color.Black,
-        modifier = Modifier.clickable { onClick() }
+private fun BackgroundColorOption(backgroundColor: AppBackgroundColor, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(backgroundColor.color)
+            .border(width = 2.dp, color = Color.Black, shape = CircleShape)
+            .clickable { onClick() }
     )
-}
-
-internal fun Modifier.menuBackground(): Modifier {
-    return this.drawBehind {
-        val outerBox = GenericShape { size, _ ->
-            moveTo(0f, 0f)
-            lineTo(size.width - 35.dp.toPx(), 4.dp.toPx())
-            lineTo(size.width - 10.7.dp.toPx(), size.height - 6.6.dp.toPx())
-            lineTo(35.5.dp.toPx(), size.height)
-            close()
-        }
-
-        val innerBox = GenericShape { size, _ ->
-            moveTo(12.dp.toPx(), 5.dp.toPx())
-            lineTo(size.width - 36.dp.toPx(), 9.5.dp.toPx())
-            lineTo(size.width - 16.4.dp.toPx(), size.height - 11.7.dp.toPx())
-            lineTo(36.5.dp.toPx(), size.height - 3.5.dp.toPx())
-            close()
-        }
-
-        drawOutline(asOutline(outerBox), Color.Black)
-        drawOutline(asOutline(innerBox), Color.White)
-    }
 }

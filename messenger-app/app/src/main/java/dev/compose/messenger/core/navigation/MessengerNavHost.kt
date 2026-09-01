@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dev.compose.messenger.core.common.model.AppBackgroundColor
 import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.feature.auth.presentation.AuthRoute
 import dev.compose.messenger.feature.chat.presentation.ChatRoute
@@ -17,6 +18,8 @@ import dev.compose.messenger.feature.profile.presentation.ProfileRoute
 fun MessengerNavHost(
     season: Season,
     onSeasonChange: (Season) -> Unit,
+    backgroundColor: AppBackgroundColor,
+    onBackgroundColorChange: (AppBackgroundColor) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
@@ -79,7 +82,9 @@ fun MessengerNavHost(
                     navController.popBackStack()
                 },
                 season = season,
-                onSeasonChange = onSeasonChange
+                onSeasonChange = onSeasonChange,
+                backgroundColor = backgroundColor,
+                onBackgroundColorChange = onBackgroundColorChange
             )
         }
     }

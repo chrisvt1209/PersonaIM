@@ -15,10 +15,12 @@ class PreferencesManager(private val context: Context) {
     private val tokenKey = stringPreferencesKey("auth_token")
     private val currentUserIdKey = stringPreferencesKey("current_user_id")
     private val seasonKey = stringPreferencesKey("current_season")
+    private val backgroundColorKey = stringPreferencesKey("current_background_color")
 
     val authToken: Flow<String?> = context.dataStore.data.map { it[tokenKey] }
     val currentUserId: Flow<Long?> = context.dataStore.data.map { it[currentUserIdKey]?.toLongOrNull() }
     val currentSeason: Flow<String?> = context.dataStore.data.map { it[seasonKey] }
+    val currentBackgroundColor: Flow<String?> = context.dataStore.data.map { it[backgroundColorKey] }
 
     suspend fun saveAuthToken(token: String) {
         context.dataStore.edit { it[tokenKey] = token }
@@ -30,6 +32,10 @@ class PreferencesManager(private val context: Context) {
 
     suspend fun saveSeason(season: String) {
         context.dataStore.edit { it[seasonKey] = season }
+    }
+
+    suspend fun saveBackgroundColor(backgroundColor: String) {
+        context.dataStore.edit { it[backgroundColorKey] = backgroundColor }
     }
 
     suspend fun clear() {
