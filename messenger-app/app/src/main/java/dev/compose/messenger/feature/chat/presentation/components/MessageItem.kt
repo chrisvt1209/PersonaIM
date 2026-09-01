@@ -31,6 +31,7 @@ import dev.compose.messenger.core.common.util.formatMessageTimestamp
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.util.asOutline
 import dev.compose.messenger.feature.chat.presentation.ChatEntry
+import dev.compose.messenger.feature.chat.presentation.PunctuationMark
 import dev.compose.messenger.feature.chat.presentation.TranscriptSizes
 
 @Composable
@@ -206,9 +207,13 @@ private fun TextBox(entry: ChatEntry) {
                 .padding(start = 42.dp, top = 20.dp, end = 32.dp, bottom = 20.dp)
         )
 
-        if (entry.drawPunctuation) {
+        if (entry.punctuationMark != null) {
+            val drawableRes = when (entry.punctuationMark) {
+                PunctuationMark.QUESTION -> R.drawable.question_mark
+                PunctuationMark.EXCLAMATION -> R.drawable.exclamation_mark
+            }
             Image(
-                painter = painterResource(R.drawable.question_mark),
+                painter = painterResource(drawableRes),
                 contentDescription = null,
                 modifier = Modifier
                     .align(Alignment.TopEnd)

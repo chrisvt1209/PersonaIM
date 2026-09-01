@@ -50,11 +50,22 @@ fun rememberTranscriptState(
     return transcriptState
 }
 
+enum class PunctuationMark {
+    QUESTION,
+    EXCLAMATION,
+}
+
+private fun trailingPunctuationMark(text: String): PunctuationMark? = when {
+    text.endsWith('?') -> PunctuationMark.QUESTION
+    text.endsWith('!') -> PunctuationMark.EXCLAMATION
+    else -> null
+}
+
 /** A message in the transcript with everything needed for rendering. */
 data class ChatEntry(
     val message: Message,
     val lineCoordinates: LineCoordinates,
-    val drawPunctuation: Boolean,
+    val punctuationMark: PunctuationMark?,
     val lineProgress: State<Float>,
     val avatarBackgroundScale: State<Float>,
     val avatarForegroundScale: State<Float>,
@@ -168,7 +179,7 @@ class TranscriptState internal constructor(
             messageVerticalScale = Animatable(initialValue = if (animate) 0.8f else 1f),
             messageTextAlpha = Animatable(initialValue = if (animate) 0f else 1f),
             punctuationScale = Animatable(
-                initialValue = if (animate || !message.text.endsWith('?')) 0f else 1f,
+                initialValue = if (animate || trailingPunctuationMark(message.text) == null) 0f else 1f,
             ),
             lineCoordinates = lineCoordinates,
         ).also { entryState ->
@@ -224,7 +235,7 @@ class TranscriptState internal constructor(
                 )
             }
 
-            if (message.text.endsWith('?')) {
+            if (trailingPunctuationMark(message.text) != null) {
                 coroutineScope.launch {
                     delay(130L.milliseconds)
                     entryState.punctuationScale.snapTo(0.4f)
@@ -317,7 +328,7 @@ private class EntryState(
 private fun EntryState.toEntry() = ChatEntry(
     message = message,
     lineCoordinates = lineCoordinates,
-    drawPunctuation = message.text.endsWith('?'),
+    punctuationMark = trailingPunctuationMark(message.text),
     avatarBackgroundScale = avatarBackgroundScale.asState(),
     avatarForegroundScale = avatarForegroundScale.asState(),
     messageHorizontalScale = messageHorizontalScale.asState(),
