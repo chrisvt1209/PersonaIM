@@ -18,14 +18,11 @@ import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import org.ktorm.database.Database
 
-private const val JWT_SECRET_QUALIFIER = "jwtSecret"
+const val JWT_SECRET_QUALIFIER = "jwtSecret"
 
-private val appModule = module {
-    single<Database> { DatabaseFactory.create() }
-    single(named(JWT_SECRET_QUALIFIER)) {
-        System.getenv("JWT_SECRET")
-            ?: "6c80f22b9f52ea31378eeeaf3bd558cd672693adef4dfb37d4eb91660ed3ae46"
-    }
+private fun appModule(database: Database) = module {
+    single<Database> { database }
+    single(named(JWT_SECRET_QUALIFIER)) { resolveJwtSecret() }
 
     single { UserRepository(get()) }
     single { UserService(get()) }
@@ -39,9 +36,9 @@ private val appModule = module {
     single { WebSocketManager() }
 }
 
-fun Application.configureDependencyInjection() {
+fun Application.configureDependencyInjection(database: Database = DatabaseFactory.create()) {
     install(Koin) {
         slf4jLogger()
-        modules(appModule)
+        modules(appModule(database))
     }
 }
