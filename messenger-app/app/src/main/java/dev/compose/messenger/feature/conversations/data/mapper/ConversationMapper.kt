@@ -11,7 +11,7 @@ import dev.compose.messenger.feature.conversations.domain.Participant
 fun ConversationDto.toEntity(currentUserId: Long?) = ConversationEntity(
     id = id,
     title = resolveTitle(currentUserId),
-    isGroup = title != null,
+    isGroup = type == "GROUP",
     lastMessage = lastMessage,
     lastMessageTimestamp = lastMessageTimestamp,
     unreadCount = unreadCount,
@@ -23,8 +23,8 @@ fun ConversationDto.toEntity(currentUserId: Long?) = ConversationEntity(
 fun ConversationDto.toDetail(currentUserId: Long?) = ConversationDetail(
     id = id.toString(),
     title = resolveTitle(currentUserId),
-    isGroup = title != null,
-    participants = participants.map { Participant(it.userId, it.username, it.status) }
+    isGroup = type == "GROUP",
+    participants = participants.map { Participant(it.userId, it.username, it.status, it.role) }
 )
 
 fun ConversationDto.toInvite() = GroupInvite(

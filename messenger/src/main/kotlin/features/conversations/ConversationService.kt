@@ -46,14 +46,10 @@ class ConversationService(
         inviterId: Long,
         inviteeId: Long
     ): Conversation {
-        val conversation = repository.findById(conversationId)
-            ?: throw NotFoundException("Conversation not found")
+        val conversation = requireGroup(conversationId)
 
-        if (conversation.title == null) {
-            throw BadRequestException("Can only invite people to a group")
-        }
-        if (!isParticipant(conversationId, inviterId)) {
-            throw ForbiddenException("You are not part of this group")
+        if (!GroupPermissions.canInvite(conversation, inviterId)) {
+            throw ForbiddenException("You don't have permission to invite people to this group")
         }
         if (conversation.participants.any { it.userId == inviteeId }) {
             throw ConflictException("That person is already in this group")
@@ -61,6 +57,66 @@ class ConversationService(
 
         repository.addParticipant(conversationId, inviteeId, ParticipantStatus.PENDING)
         return repository.findById(conversationId)!!
+    }
+
+    fun removeMember(
+        conversationId: Long,
+        removerId: Long,
+        targetUserId: Long
+    ): Conversation {
+        val conversation = requireGroup(conversationId)
+
+        if (conversation.participants.none { it.userId == targetUserId }) {
+            throw NotFoundException("That person is not in this group")
+        }
+        if (!GroupPermissions.canRemove(conversation, removerId, targetUserId)) {
+            throw ForbiddenException("You don't have permission to remove that person")
+        }
+
+        repository.removeParticipant(conversationId, targetUserId)
+        return repository.findById(conversationId)!!
+    }
+
+    fun changeRole(
+        conversationId: Long,
+        changerId: Long,
+        targetUserId: Long,
+        newRole: String
+    ): Conversation {
+        if (newRole !in ParticipantRole.ALL) {
+            throw BadRequestException("Invalid role")
+        }
+
+        val conversation = requireGroup(conversationId)
+
+        if (conversation.participants.none { it.userId == targetUserId }) {
+            throw NotFoundException("That person is not in this group")
+        }
+        if (!GroupPermissions.canChangeRole(conversation, changerId, targetUserId)) {
+            throw ForbiddenException("You don't have permission to change that person's role")
+        }
+
+        repository.updateParticipantRole(conversationId, targetUserId, newRole)
+        return repository.findById(conversationId)!!
+    }
+
+    fun leave(conversationId: Long, userId: Long) {
+        val conversation = requireGroup(conversationId)
+
+        if (conversation.participants.none { it.userId == userId }) {
+            throw NotFoundException("You are not part of this group")
+        }
+
+        repository.removeParticipant(conversationId, userId)
+    }
+
+    private fun requireGroup(conversationId: Long): Conversation {
+        val conversation = repository.findById(conversationId)
+            ?: throw NotFoundException("Conversation not found")
+        if (conversation.type != ConversationType.GROUP) {
+            throw BadRequestException("This action is only available in group conversations")
+        }
+        return conversation
     }
 
     fun acceptInvite(conversationId: Long, userId: Long) {
@@ -100,7 +156,14 @@ class ConversationService(
     }
 
     fun delete(conversationId: Long, userId: Long) {
-        if (!isParticipant(conversationId, userId)) {
+        val conversation = repository.findById(conversationId)
+            ?: throw NotFoundException("Conversation not found")
+
+        if (conversation.type == ConversationType.GROUP) {
+            if (!GroupPermissions.canDeleteGroup(conversation, userId)) {
+                throw ForbiddenException("Only maintainers can delete this group")
+            }
+        } else if (!isParticipant(conversationId, userId)) {
             throw NotFoundException("Conversation not found")
         }
 

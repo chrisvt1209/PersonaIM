@@ -6,13 +6,15 @@ import kotlinx.serialization.Serializable
 data class ParticipantDto(
     val userId: Long,
     val username: String,
-    val status: String
+    val status: String,
+    val role: String = "MEMBER"
 )
 
 @Serializable
 data class ConversationDto(
     val id: Long,
     val title: String? = null,
+    val type: String = "SINGLE",
     val participants: List<ParticipantDto> = emptyList(),
     val lastMessage: String? = null,
     val lastMessageTimestamp: String? = null,
@@ -33,4 +35,9 @@ data class CreateGroupRequest(
 @Serializable
 data class InviteRequest(
     val userId: Long
+)
+
+@Serializable
+data class ChangeRoleRequest(
+    val role: String
 )

@@ -13,11 +13,12 @@ class ConversationRepository(
         user2: Long
     ): Conversation {
         val conversationId = database.insertAndGenerateKey(Conversations) {
+            set(it.type, ConversationType.SINGLE)
             set(it.createdAt, it.createdAt.defaultValue())
         } as Long
 
-        insertParticipant(conversationId, user1, ParticipantStatus.ACCEPTED)
-        insertParticipant(conversationId, user2, ParticipantStatus.ACCEPTED)
+        insertParticipant(conversationId, user1, ParticipantStatus.ACCEPTED, ParticipantRole.MEMBER)
+        insertParticipant(conversationId, user2, ParticipantStatus.ACCEPTED, ParticipantRole.MEMBER)
 
         return findById(conversationId)!!
     }
@@ -29,22 +30,35 @@ class ConversationRepository(
     ): Conversation {
         val conversationId = database.insertAndGenerateKey(Conversations) {
             set(it.title, title)
+            set(it.type, ConversationType.GROUP)
             set(it.createdAt, it.createdAt.defaultValue())
         } as Long
 
-        insertParticipant(conversationId, creatorId, ParticipantStatus.ACCEPTED)
-        memberUserIds.forEach { insertParticipant(conversationId, it, ParticipantStatus.PENDING) }
+        insertParticipant(conversationId, creatorId, ParticipantStatus.ACCEPTED, ParticipantRole.MAINTAINER)
+        memberUserIds.forEach {
+            insertParticipant(conversationId, it, ParticipantStatus.PENDING, ParticipantRole.MEMBER)
+        }
 
         return findById(conversationId)!!
     }
 
     fun addParticipant(conversationId: Long, userId: Long, status: String) {
-        insertParticipant(conversationId, userId, status)
+        insertParticipant(conversationId, userId, status, ParticipantRole.MEMBER)
     }
 
     fun updateParticipantStatus(conversationId: Long, userId: Long, status: String): Boolean {
         val updated = database.update(ConversationParticipants) {
             set(it.status, status)
+            where {
+                (it.conversationId eq conversationId) and (it.userId eq userId)
+            }
+        }
+        return updated > 0
+    }
+
+    fun updateParticipantRole(conversationId: Long, userId: Long, role: String): Boolean {
+        val updated = database.update(ConversationParticipants) {
+            set(it.role, role)
             where {
                 (it.conversationId eq conversationId) and (it.userId eq userId)
             }
@@ -59,47 +73,47 @@ class ConversationRepository(
         return deleted > 0
     }
 
-    private fun insertParticipant(conversationId: Long, userId: Long, status: String) {
+    private fun insertParticipant(conversationId: Long, userId: Long, status: String, role: String) {
         database.insert(ConversationParticipants) {
             set(it.conversationId, conversationId)
             set(it.userId, userId)
             set(it.status, status)
+            set(it.role, role)
         }
     }
 
     fun findById(
         conversationId: Long
     ): Conversation? {
-        val title = database
+        val conversationRow = database
             .from(Conversations)
-            .select(Conversations.id, Conversations.title)
+            .select(Conversations.id, Conversations.title, Conversations.type)
             .where { Conversations.id eq conversationId }
-            .map { it[Conversations.title] }
+            .map { it[Conversations.title] to it[Conversations.type] }
             .firstOrNull()
 
-        // firstOrNull() above returns null both when there's no matching row and when
-        // there IS a row but its title column is legitimately null (1:1 conversation),
-        // so re-check existence separately via the participant rows.
         val participants = database
             .from(ConversationParticipants)
             .innerJoin(Users, on = ConversationParticipants.userId eq Users.id)
-            .select(Users.id, Users.username, ConversationParticipants.status)
+            .select(Users.id, Users.username, ConversationParticipants.status, ConversationParticipants.role)
             .where { ConversationParticipants.conversationId eq conversationId }
             .map {
                 Participant(
                     userId = it[Users.id]!!,
                     username = it[Users.username]!!,
-                    status = it[ConversationParticipants.status]!!
+                    status = it[ConversationParticipants.status]!!,
+                    role = it[ConversationParticipants.role]!!
                 )
             }
 
-        if (participants.isEmpty()) {
+        if (participants.isEmpty() || conversationRow == null) {
             return null
         }
 
         return Conversation(
             id = conversationId,
-            title = title,
+            title = conversationRow.first,
+            type = conversationRow.second ?: ConversationType.SINGLE,
             participants = participants
         )
     }

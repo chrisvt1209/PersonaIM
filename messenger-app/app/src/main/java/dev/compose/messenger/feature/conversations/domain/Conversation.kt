@@ -13,10 +13,17 @@ data class Conversation(
     val participantIds: List<Long> = emptyList()
 )
 
+object ParticipantRole {
+    const val MEMBER = "MEMBER"
+    const val INVITER = "INVITER"
+    const val MAINTAINER = "MAINTAINER"
+}
+
 data class Participant(
     val userId: Long,
     val username: String,
-    val status: String
+    val status: String,
+    val role: String
 )
 
 data class ConversationDetail(

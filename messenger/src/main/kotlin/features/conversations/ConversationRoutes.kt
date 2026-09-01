@@ -67,6 +67,33 @@ fun Route.conversationRoutes(
                 call.respond(conversation)
             }
 
+            delete("/{id}/members/{userId}") {
+                val callerId = call.userId()
+                val id = call.conversationId()
+                val targetUserId = call.targetUserId()
+
+                val conversation = service.removeMember(id, callerId, targetUserId)
+                call.respond(conversation)
+            }
+
+            put("/{id}/members/{userId}/role") {
+                val callerId = call.userId()
+                val id = call.conversationId()
+                val targetUserId = call.targetUserId()
+                val request = call.receive<ChangeRoleRequest>()
+
+                val conversation = service.changeRole(id, callerId, targetUserId, request.role)
+                call.respond(conversation)
+            }
+
+            post("/{id}/leave") {
+                val userId = call.userId()
+                val id = call.conversationId()
+
+                service.leave(id, userId)
+                call.respond(HttpStatusCode.OK)
+            }
+
             post("/{id}/accept") {
                 val userId = call.userId()
                 val id = call.conversationId()
@@ -101,3 +128,7 @@ private fun ApplicationCall.userId(): Long =
 private fun ApplicationCall.conversationId(): Long =
     parameters["id"]?.toLongOrNull()
         ?: throw BadRequestException("Invalid conversation id")
+
+private fun ApplicationCall.targetUserId(): Long =
+    parameters["userId"]?.toLongOrNull()
+        ?: throw BadRequestException("Invalid user id")

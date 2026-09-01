@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -30,8 +30,8 @@ import dev.compose.messenger.core.designsystem.theme.OptimaNova
 fun ChatTopBar(
     title: String,
     onBackClick: () -> Unit,
-    showInviteButton: Boolean = false,
-    onInviteClick: () -> Unit = {}
+    showGroupButton: Boolean = false,
+    onGroupClick: () -> Unit = {}
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -63,11 +63,11 @@ fun ChatTopBar(
             )
         }
 
-        if (showInviteButton) {
-            IconButton(onClick = onInviteClick, modifier = Modifier.padding(top = 8.dp)) {
+        if (showGroupButton) {
+            IconButton(onClick = onGroupClick, modifier = Modifier.padding(top = 8.dp)) {
                 Icon(
-                    imageVector = Icons.Default.GroupAdd,
-                    contentDescription = "Invite to Group",
+                    imageVector = Icons.Default.Group,
+                    contentDescription = "Group Members",
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)
                 )

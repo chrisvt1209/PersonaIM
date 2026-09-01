@@ -68,6 +68,9 @@ fun MessengerNavHost(
                 conversationId = conversationId,
                 onBackClick = {
                     navController.popBackStack()
+                },
+                onLeftGroup = {
+                    navController.popBackStack()
                 }
             )
         }

@@ -17,3 +17,8 @@ data class CreateGroupRequest(
 data class InviteRequest(
     val userId: Long
 )
+
+@Serializable
+data class ChangeRoleRequest(
+    val role: String
+)

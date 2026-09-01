@@ -1,5 +1,6 @@
 package dev.compose.messenger.core.network.api
 
+import dev.compose.messenger.feature.conversations.data.ChangeRoleRequest
 import dev.compose.messenger.feature.conversations.data.ConversationDto
 import dev.compose.messenger.feature.conversations.data.CreateConversationRequest
 import dev.compose.messenger.feature.conversations.data.CreateGroupRequest
@@ -9,6 +10,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 
 class ConversationApi(private val client: HttpClient) {
@@ -52,5 +54,19 @@ class ConversationApi(private val client: HttpClient) {
         client.post("conversations/$id/invite") {
             setBody(request)
         }
+    }
+
+    suspend fun removeMember(conversationId: Long, userId: Long): ConversationDto {
+        return client.delete("conversations/$conversationId/members/$userId").body()
+    }
+
+    suspend fun changeRole(conversationId: Long, userId: Long, request: ChangeRoleRequest): ConversationDto {
+        return client.put("conversations/$conversationId/members/$userId/role") {
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun leaveGroup(conversationId: Long) {
+        client.post("conversations/$conversationId/leave")
     }
 }

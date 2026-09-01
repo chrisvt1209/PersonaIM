@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,6 +32,7 @@ import dev.compose.messenger.core.designsystem.component.BackgroundParticles
 import dev.compose.messenger.R
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.feature.chat.presentation.components.ChatTopBar
+import dev.compose.messenger.feature.chat.presentation.components.GroupMembersDialog
 import dev.compose.messenger.feature.chat.presentation.components.MessageInput
 import dev.compose.messenger.feature.chat.presentation.components.MessageList
 import dev.compose.messenger.feature.chat.presentation.rememberTranscriptState
@@ -45,56 +44,47 @@ import org.koin.core.parameter.parametersOf
 fun ChatRoute(
     conversationId: String,
     onBackClick: () -> Unit,
+    onLeftGroup: () -> Unit,
     viewModel: ChatViewModel = koinViewModel { parametersOf(conversationId) }
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    var showInviteDialog by remember { mutableStateOf(false) }
+    var showMembersDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.leftGroup) {
+        if (uiState.leftGroup) {
+            showMembersDialog = false
+            onLeftGroup()
+        }
+    }
 
     ChatScreen(
         conversationId = conversationId,
         uiState = uiState,
         onEvent = viewModel::onEvent,
         onBackClick = onBackClick,
-        onInviteClick = {
+        onGroupClick = {
             viewModel.onEvent(ChatEvent.LoadFriendsForInvite)
-            showInviteDialog = true
+            showMembersDialog = true
         }
     )
 
-    if (showInviteDialog) {
+    if (showMembersDialog) {
         val alreadyInGroup = uiState.participants.map { it.userId }.toSet()
         val invitable = uiState.availableFriendsToInvite.filter { it.id !in alreadyInGroup }
 
-        AlertDialog(
-            onDismissRequest = { showInviteDialog = false },
-            title = { Text("Invite to Group") },
-            text = {
-                Column {
-                    if (uiState.inviteError != null) {
-                        Text(uiState.inviteError!!, color = Color.Red)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    if (invitable.isEmpty()) {
-                        Text("No more friends to invite.")
-                    } else {
-                        invitable.forEach { friend ->
-                            Text(
-                                text = friend.username,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { viewModel.onEvent(ChatEvent.InviteFriend(friend.id)) }
-                                    .padding(vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showInviteDialog = false }) {
-                    Text("Done")
-                }
-            }
+        GroupMembersDialog(
+            participants = uiState.participants,
+            myUserId = uiState.myUserId,
+            myRole = uiState.myRole,
+            invitableFriends = invitable,
+            memberActionError = uiState.memberActionError,
+            inviteError = uiState.inviteError,
+            onRemove = { userId -> viewModel.onEvent(ChatEvent.RemoveMember(userId)) },
+            onChangeRole = { userId, role -> viewModel.onEvent(ChatEvent.ChangeRole(userId, role)) },
+            onInvite = { userId -> viewModel.onEvent(ChatEvent.InviteFriend(userId)) },
+            onLeave = { viewModel.onEvent(ChatEvent.LeaveGroup) },
+            onDismiss = { showMembersDialog = false }
         )
     }
 }
@@ -105,7 +95,7 @@ fun ChatScreen(
     uiState: ChatUiState,
     onEvent: (ChatEvent) -> Unit,
     onBackClick: () -> Unit,
-    onInviteClick: () -> Unit
+    onGroupClick: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -116,8 +106,8 @@ fun ChatScreen(
             ChatTopBar(
                 title = uiState.conversationTitle,
                 onBackClick = onBackClick,
-                showInviteButton = uiState.isGroup,
-                onInviteClick = onInviteClick
+                showGroupButton = uiState.isGroup,
+                onGroupClick = onGroupClick
             )
 
             Box(

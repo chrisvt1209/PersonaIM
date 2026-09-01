@@ -28,6 +28,9 @@ interface ConversationRepository {
     suspend fun acceptInvite(id: String): Result<Unit>
     suspend fun declineInvite(id: String): Result<Unit>
     suspend fun inviteToGroup(conversationId: String, userId: Long): Result<Unit>
+    suspend fun removeMember(conversationId: String, userId: Long): Result<Unit>
+    suspend fun changeRole(conversationId: String, userId: Long, role: String): Result<Unit>
+    suspend fun leaveGroup(conversationId: String): Result<Unit>
 }
 
 class ConversationRepositoryImpl(
@@ -134,6 +137,38 @@ class ConversationRepositoryImpl(
         val id = conversationId.toLongOrNull() ?: return Result.failure(Exception("Invalid ID"))
         return try {
             api.invite(id, InviteRequest(userId))
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage()))
+        }
+    }
+
+    override suspend fun removeMember(conversationId: String, userId: Long): Result<Unit> {
+        val id = conversationId.toLongOrNull() ?: return Result.failure(Exception("Invalid ID"))
+        return try {
+            api.removeMember(id, userId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage()))
+        }
+    }
+
+    override suspend fun changeRole(conversationId: String, userId: Long, role: String): Result<Unit> {
+        val id = conversationId.toLongOrNull() ?: return Result.failure(Exception("Invalid ID"))
+        return try {
+            api.changeRole(id, userId, ChangeRoleRequest(role))
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage()))
+        }
+    }
+
+    override suspend fun leaveGroup(conversationId: String): Result<Unit> {
+        val id = conversationId.toLongOrNull() ?: return Result.failure(Exception("Invalid ID"))
+        return try {
+            api.leaveGroup(id)
+            messageDao.clearMessagesForConversation(id)
+            dao.deleteConversation(id)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(Exception(e.toUserMessage()))
