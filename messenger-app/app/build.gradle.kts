@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.compose.messenger"
-        minSdk = 24
+        minSdk = 23
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"

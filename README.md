@@ -4,7 +4,7 @@ A modern, offline-first messenger application inspired by the Persona 5 IM inter
 
 ## 🚀 Quick Start (Docker)
 
-To boot the entire stack (PostgreSQL, Ktor Backend, and Android Build environment), run the following command from the root directory:
+To boot the backend stack (PostgreSQL + Ktor Backend), run the following command from the root directory:
 
 ```bash
 docker compose up --build
@@ -13,8 +13,8 @@ docker compose up --build
 ### What happens?
 1.  **Database**: A PostgreSQL instance starts on port `5432`.
 2.  **Backend**: The Ktor API starts on port `8080`.
-3.  **Android Build**: A containerized Android environment builds the debug APK (using Android SDK 35).
-4.  **Output**: The generated APK will be available at `./messenger-app/build-output/app-debug.apk`.
+
+The Android app is built and installed separately (see below) — it is not part of the Docker stack.
 
 ---
 
@@ -40,6 +40,19 @@ docker compose up --build
 ---
 
 ## 📱 Local Development
+
+### Building the Android App
+Build and install the debug APK straight onto a device or emulator from `/messenger-app`:
+
+```bash
+./gradlew :app:installDebug
+```
+
+Or build the APK only (`app/build/outputs/apk/debug/app-debug.apk`) for manual install:
+
+```bash
+./gradlew :app:assembleDebug
+```
 
 ### Connecting App to Backend
 - **Emulator**: The app is pre-configured to connect to `10.0.2.2:8080` (Docker Backend).

@@ -26,12 +26,3 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  android-build:
-    build:
-      context: ./messenger-app
-      dockerfile: Dockerfile
-    volumes:
-      - ./messenger-app/build-output:/output
-    # This service runs once and exits after copying the APK to the volume
-    restart: "no"
