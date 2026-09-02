@@ -11,6 +11,10 @@ Persona Messenger is a Persona 5-styled, offline-first messenger with two indepe
 
 They only communicate over the HTTP/WebSocket API — there is no shared Kotlin code/module between them. Treat them as separate codebases when making changes; a full-stack feature touches both independently.
 
+## CI
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push to `main` and every PR: a `backend` job (`./gradlew build` against a `postgres:16-alpine` service DB, matching `TestDatabase`'s defaults) and an `android` job (`./gradlew :app:assembleDebug :app:testDebugUnitTest`, uploading the debug APK as a workflow artifact). No deploy step — CI only.
+
 ## Commands
 
 ### Backend (`messenger/`)
