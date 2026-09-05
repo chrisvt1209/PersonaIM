@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,7 +43,9 @@ import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.AppBackgroundColor
 import dev.compose.messenger.core.common.model.Season
 import dev.compose.messenger.core.designsystem.component.PersonaButton
+import dev.compose.messenger.core.designsystem.component.PersonaDialog
 import dev.compose.messenger.core.designsystem.component.PersonaTextField
+import dev.compose.messenger.core.designsystem.component.PersonaTopBar
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.common.model.Avatar
@@ -249,43 +249,17 @@ private fun ProfileHeader(
     onSeasonChange: (Season) -> Unit,
     onBackgroundColorChange: (AppBackgroundColor) -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(start = 8.dp, top = 2.dp, end = 12.dp),
+    PersonaTopBar(
+        title = "PROFILE",
+        onLogoClick = onBackClick,
     ) {
-        Image(
-            painter = painterResource(R.drawable.logo_im),
-            contentDescription = "Home",
-            modifier = Modifier
-                .height(100.dp)
-                .offset(x = 4.dp, y = (-4).dp)
-                .clickable { onBackClick() }
-        )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier
-                .weight(1f)
-                .padding(top = 12.dp, start = 4.dp),
-        ) {
-            Text(
-                text = "PROFILE",
-                color = Color.White,
-                fontFamily = OptimaNova,
-                fontSize = 26.sp,
-            )
-        }
-
         SeasonMenu(
             hostElement = {
                 Icon(
                     imageVector = Icons.Default.Palette,
                     contentDescription = "Change Season",
                     tint = Color.White,
-                    modifier = Modifier.padding(top = 12.dp).size(28.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             },
             onSeasonChange = onSeasonChange
@@ -297,7 +271,7 @@ private fun ProfileHeader(
                     imageVector = Icons.Default.FormatColorFill,
                     contentDescription = "Change Background Color",
                     tint = Color.White,
-                    modifier = Modifier.padding(top = 12.dp).size(28.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             },
             onBackgroundColorChange = onBackgroundColorChange
@@ -325,71 +299,58 @@ private fun EditProfileDialog(
         }
     }
 
-    AlertDialog(
+    PersonaDialog(
+        title = "Edit Profile",
         onDismissRequest = onDismiss,
-        title = { Text("Edit Profile") },
-        text = {
-            Column {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Avatar.entries.forEach { option ->
-                        Image(
-                            painter = painterResource(option.drawableRes),
-                            contentDescription = option.key,
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .border(
-                                    width = if (avatar == option.key) 3.dp else 0.dp,
-                                    color = PersonaRed,
-                                    shape = CircleShape
-                                )
-                                .clickable { avatar = option.key }
+        confirmText = if (isSaving) "Saving..." else "Save",
+        confirmEnabled = !isSaving && username.isNotBlank() && email.isNotBlank(),
+        onConfirm = {
+            hasSubmitted = true
+            onSave(username, email, avatar)
+        },
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Avatar.entries.forEach { option ->
+                Image(
+                    painter = painterResource(option.drawableRes),
+                    contentDescription = option.key,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .border(
+                            width = if (avatar == option.key) 2.dp else 1.dp,
+                            color = PersonaRed,
+                            shape = CircleShape
                         )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                PersonaTextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    placeholder = "Username",
-                    modifier = Modifier.fillMaxWidth()
+                        .clickable { avatar = option.key }
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                PersonaTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    placeholder = "Email address",
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                if (error != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(error, color = Color.Red, fontSize = 13.sp)
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                enabled = !isSaving && username.isNotBlank() && email.isNotBlank(),
-                onClick = {
-                    hasSubmitted = true
-                    onSave(username, email, avatar)
-                }
-            ) {
-                Text(if (isSaving) "Saving..." else "Save")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
             }
         }
-    )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        PersonaTextField(
+            value = username,
+            onValueChange = { username = it },
+            placeholder = "Username",
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        PersonaTextField(
+            value = email,
+            onValueChange = { email = it },
+            placeholder = "Email address",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        if (error != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(error, color = Color.Red, fontSize = 13.sp)
+        }
+    }
 }
 
 @Composable
@@ -412,66 +373,53 @@ private fun ChangePasswordDialog(
 
     val mismatch = newPassword.isNotEmpty() && confirmPassword.isNotEmpty() && newPassword != confirmPassword
 
-    AlertDialog(
+    PersonaDialog(
+        title = "Change Password",
         onDismissRequest = onDismiss,
-        title = { Text("Change Password") },
-        text = {
-            Column {
-                PersonaTextField(
-                    value = currentPassword,
-                    onValueChange = { currentPassword = it },
-                    placeholder = "Current password",
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    modifier = Modifier.fillMaxWidth()
-                )
+        confirmText = if (isSaving) "Saving..." else "Save",
+        confirmEnabled = !isSaving && currentPassword.isNotBlank() &&
+            newPassword.isNotBlank() && newPassword == confirmPassword,
+        onConfirm = { onSave(currentPassword, newPassword) },
+    ) {
+        PersonaTextField(
+            value = currentPassword,
+            onValueChange = { currentPassword = it },
+            placeholder = "Current password",
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            modifier = Modifier.fillMaxWidth()
+        )
 
-                Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-                PersonaTextField(
-                    value = newPassword,
-                    onValueChange = { newPassword = it },
-                    placeholder = "New password",
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    modifier = Modifier.fillMaxWidth()
-                )
+        PersonaTextField(
+            value = newPassword,
+            onValueChange = { newPassword = it },
+            placeholder = "New password",
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            modifier = Modifier.fillMaxWidth()
+        )
 
-                Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-                PersonaTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
-                    placeholder = "Confirm new password",
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    modifier = Modifier.fillMaxWidth()
-                )
+        PersonaTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            placeholder = "Confirm new password",
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            modifier = Modifier.fillMaxWidth()
+        )
 
-                if (mismatch) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Passwords do not match", color = Color.Red, fontSize = 13.sp)
-                }
-
-                if (error != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(error, color = Color.Red, fontSize = 13.sp)
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                enabled = !isSaving && currentPassword.isNotBlank() &&
-                    newPassword.isNotBlank() && newPassword == confirmPassword,
-                onClick = { onSave(currentPassword, newPassword) }
-            ) {
-                Text(if (isSaving) "Saving..." else "Save")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
-            }
+        if (mismatch) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Passwords do not match", color = Color.Red, fontSize = 13.sp)
         }
-    )
+
+        if (error != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(error, color = Color.Red, fontSize = 13.sp)
+        }
+    }
 }

@@ -47,5 +47,6 @@ fun ConversationEntity.toDomain() = Conversation(
     lastMessage = lastMessage ?: "",
     unreadCount = unreadCount,
     accentColor = Color(0xFFC41001),
-    participantIds = participantIds.split(",").mapNotNull { it.toLongOrNull() }
+    participantIds = participantIds.split(",").mapNotNull { it.toLongOrNull() },
+    isGroup = isGroup
 )

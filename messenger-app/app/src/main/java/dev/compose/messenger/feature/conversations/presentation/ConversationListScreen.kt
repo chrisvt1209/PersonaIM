@@ -47,12 +47,12 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.Avatar
 import dev.compose.messenger.core.designsystem.component.PersonaAvatar
+import dev.compose.messenger.core.designsystem.component.PersonaTopBar
 import dev.compose.messenger.core.designsystem.component.randomAvatarColor
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
@@ -206,7 +206,7 @@ fun ConversationListScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(uiState.conversations) { conversation ->
                         ConversationItem(
@@ -254,83 +254,53 @@ private fun PersonaListHeader(
     onAddClick: () -> Unit,
     onInvitesClick: () -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(start = 8.dp, top = 2.dp, end = 12.dp),
+    PersonaTopBar(
+        title = "MESSAGES",
+        onLogoClick = {},
     ) {
-        Image(
-            painter = painterResource(R.drawable.logo_im),
-            contentDescription = "Home",
-            modifier = Modifier
-                .height(100.dp)
-                .offset(x = 4.dp, y = (-4).dp)
-        )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier
-                .weight(1f)
-                .padding(top = 12.dp, start = 4.dp),
-        ) {
-            Text(
-                text = "MESSAGES",
-                color = Color.White,
-                fontFamily = OptimaNova,
-                fontSize = 26.sp,
-            )
-        }
-
-        Row(
-            modifier = Modifier.padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (inviteCount > 0) {
-                Box {
-                    IconButton(onClick = onInvitesClick) {
-                        Icon(
-                            imageVector = Icons.Default.MarkEmailUnread,
-                            contentDescription = "Group Invites",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(x = (-4).dp, y = 6.dp)
-                            .size(16.dp)
-                            .background(PersonaRed, shape = androidx.compose.foundation.shape.CircleShape)
-                    ) {
-                        Text(
-                            text = inviteCount.toString(),
-                            color = Color.White,
-                            fontSize = 10.sp
-                        )
-                    }
+        if (inviteCount > 0) {
+            Box {
+                IconButton(onClick = onInvitesClick) {
+                    Icon(
+                        imageVector = Icons.Default.MarkEmailUnread,
+                        contentDescription = "Group Invites",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = (-4).dp, y = 2.dp)
+                        .size(16.dp)
+                        .background(PersonaRed, shape = androidx.compose.foundation.shape.CircleShape)
+                ) {
+                    Text(
+                        text = inviteCount.toString(),
+                        color = Color.White,
+                        fontSize = 10.sp
+                    )
                 }
             }
+        }
 
-            IconButton(onClick = onAddClick) {
-                Icon(
-                    imageVector = Icons.Default.Group,
-                    contentDescription = "Friends",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-
-            Image(
-                painter = painterResource(Avatar.fromKey(userAvatar).drawableRes),
-                contentDescription = "Profile",
-                modifier = Modifier
-                    .height(60.dp)
-                    .clickable { onProfileClick() }
+        IconButton(onClick = onAddClick) {
+            Icon(
+                imageVector = Icons.Default.Group,
+                contentDescription = "Friends",
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
             )
         }
+
+        Image(
+            painter = painterResource(Avatar.fromKey(userAvatar).drawableRes),
+            contentDescription = "Profile",
+            modifier = Modifier
+                .height(44.dp)
+                .clickable { onProfileClick() }
+        )
     }
 }
 
@@ -348,90 +318,127 @@ private fun ConversationItem(
         label = "conversation-scale",
     )
 
-    Row(
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier
-            .fillMaxWidth()
-            .scale(scale)
-            .clickable(
-                interactionSource = interaction,
-                indication = null,
-                onClick = onClick,
-            )
-            .personaPanelBackground(
-                accentColor = conversation.accentColor,
-                fillColor = Color.Black.copy(alpha = 0.76f),
-            )
-            .padding(horizontal = 18.dp, vertical = 16.dp),
-    ) {
-        ParticipantAvatars(
-            participantIds = conversation.participantIds,
-            avatars = participantAvatars,
-            modifier = Modifier.padding(top = 2.dp)
+    val containerModifier = Modifier
+        .fillMaxWidth()
+        .scale(scale)
+        .clickable(
+            interactionSource = interaction,
+            indication = null,
+            onClick = onClick,
         )
+        .personaPanelBackground(
+            accentColor = conversation.accentColor,
+            fillColor = Color.Black.copy(alpha = 0.76f),
+        )
+        .padding(horizontal = 18.dp, vertical = 12.dp)
 
-        Spacer(modifier = Modifier.width(14.dp))
-
+    if (conversation.isGroup) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.weight(1f),
+            modifier = containerModifier,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = conversation.title,
-                    color = Color.White,
-                    fontFamily = OptimaNova,
-                    fontSize = 20.sp,
-                    modifier = Modifier.weight(1f)
+            ConversationTitleRow(conversation, onDeleteClick)
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ParticipantAvatars(
+                    participantIds = conversation.participantIds,
+                    avatars = participantAvatars,
                 )
 
-                if (conversation.unreadCount > 0) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .personaBadgeBackground(conversation.accentColor)
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
-                    ) {
-                        Text(
-                            text = "${conversation.unreadCount} new",
-                            color = Color.Black,
-                            fontFamily = OptimaNova,
-                            fontSize = 13.sp,
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.width(14.dp))
 
-                IconButton(onClick = onDeleteClick, modifier = Modifier.size(24.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete conversation",
-                        tint = Color.White.copy(alpha = 0.7f)
-                    )
-                }
+                Text(
+                    text = conversation.lastMessage,
+                    color = Color.White.copy(alpha = 0.82f),
+                    maxLines = 1,
+                    fontSize = 13.sp,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    } else {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = containerModifier,
+        ) {
+            ParticipantAvatars(
+                participantIds = conversation.participantIds,
+                avatars = participantAvatars,
+            )
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.weight(1f),
+            ) {
+                ConversationTitleRow(conversation, onDeleteClick)
+
+                Text(
+                    text = conversation.lastMessage,
+                    color = Color.White.copy(alpha = 0.82f),
+                    maxLines = 1,
+                    fontSize = 13.sp,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConversationTitleRow(
+    conversation: Conversation,
+    onDeleteClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = conversation.title,
+            color = Color.White,
+            fontFamily = OptimaNova,
+            fontSize = 18.sp,
+            modifier = Modifier.weight(1f)
+        )
+
+        if (conversation.unreadCount > 0) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .personaBadgeBackground(conversation.accentColor)
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = "${conversation.unreadCount} new",
+                    color = Color.Black,
+                    fontFamily = OptimaNova,
+                    fontSize = 13.sp,
+                )
             }
 
-            Text(
-                text = conversation.participantNames,
-                color = Color.White.copy(alpha = 0.82f),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                text = conversation.lastMessage,
-                color = Color.White.copy(alpha = 0.82f),
-                maxLines = 2,
-                fontSize = 13.sp,
-                modifier = Modifier.height(34.dp),
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .personaBadgeBackground(PersonaRed)
+                .clickable(onClick = onDeleteClick)
+                .padding(6.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete conversation",
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
             )
         }
     }
 }
 
-private val AvatarChipSize = 56.dp
+private val AvatarChipSize = 44.dp
 private val AvatarChipAspect = 110f / 90f
 private val AvatarChipWidth = AvatarChipSize * AvatarChipAspect
 private val AvatarChipOverlap = 34.dp

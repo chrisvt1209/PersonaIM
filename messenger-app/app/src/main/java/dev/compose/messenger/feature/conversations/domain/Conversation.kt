@@ -10,7 +10,8 @@ data class Conversation(
     val lastMessage: String,
     val unreadCount: Int,
     val accentColor: Color,
-    val participantIds: List<Long> = emptyList()
+    val participantIds: List<Long> = emptyList(),
+    val isGroup: Boolean = false
 )
 
 object ParticipantRole {

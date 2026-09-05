@@ -21,8 +21,12 @@ import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.Avatar
 import dev.compose.messenger.core.designsystem.component.PersonaAvatar
+import dev.compose.messenger.core.designsystem.component.PersonaDialog
+import dev.compose.messenger.core.designsystem.component.PersonaTextField
+import dev.compose.messenger.core.designsystem.component.PersonaTopBar
 import dev.compose.messenger.core.designsystem.component.randomAvatarColor
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
+import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
 import dev.compose.messenger.feature.friends.domain.Friend
 import kotlinx.coroutines.delay
@@ -60,105 +64,101 @@ fun FriendListRoute(
 
     if (showAddDialog) {
         var uidText by remember { mutableStateOf("") }
-        AlertDialog(
+        PersonaDialog(
+            title = "Add Friend",
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Add Friend") },
-            text = {
-                Column {
-                    Text("Enter friend's UID:")
-                    OutlinedTextField(
-                        value = uidText,
-                        onValueChange = { uidText = it },
-                        label = { Text("UID") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+            confirmText = "Add",
+            confirmEnabled = uidText.isNotBlank(),
+            onConfirm = {
+                if (uidText.isNotBlank()) {
+                    viewModel.onEvent(FriendEvent.AddFriend(uidText))
+                    showAddDialog = false
                 }
             },
-            confirmButton = {
-                Button(onClick = {
-                    if (uidText.isNotBlank()) {
-                        viewModel.onEvent(FriendEvent.AddFriend(uidText))
-                        showAddDialog = false
-                    }
-                }) {
-                    Text("Add")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showAddDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
+        ) {
+            Text(
+                text = "Enter friend's UID:",
+                color = Color.White,
+                fontSize = 14.sp,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            PersonaTextField(
+                value = uidText,
+                onValueChange = { uidText = it },
+                placeholder = "UID",
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 
     if (showNewGroupDialog) {
         var groupName by remember { mutableStateOf("") }
         val selectedFriendIds = remember { mutableStateListOf<Long>() }
 
-        AlertDialog(
+        PersonaDialog(
+            title = "New Group",
             onDismissRequest = { showNewGroupDialog = false },
-            title = { Text("New Group") },
-            text = {
-                Column {
-                    OutlinedTextField(
-                        value = groupName,
-                        onValueChange = { groupName = it },
-                        label = { Text("Group name") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("Select friends to invite:")
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        uiState.friends.forEach { friend ->
-                            val checked = selectedFriendIds.contains(friend.id)
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        if (checked) {
-                                            selectedFriendIds.remove(friend.id)
-                                        } else {
-                                            selectedFriendIds.add(friend.id)
-                                        }
-                                    }
-                            ) {
-                                Checkbox(
-                                    checked = checked,
-                                    onCheckedChange = { isChecked ->
-                                        if (isChecked) {
-                                            selectedFriendIds.add(friend.id)
-                                        } else {
-                                            selectedFriendIds.remove(friend.id)
-                                        }
-                                    }
-                                )
-                                Text(friend.username)
+            confirmText = "Create",
+            confirmEnabled = groupName.isNotBlank() && selectedFriendIds.isNotEmpty(),
+            onConfirm = {
+                viewModel.onEvent(
+                    FriendEvent.CreateGroup(groupName, selectedFriendIds.toList())
+                )
+                showNewGroupDialog = false
+            },
+        ) {
+            PersonaTextField(
+                value = groupName,
+                onValueChange = { groupName = it },
+                placeholder = "Group name",
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Select friends to invite:",
+                color = Color.White,
+                fontSize = 14.sp,
+            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                uiState.friends.forEach { friend ->
+                    val checked = selectedFriendIds.contains(friend.id)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (checked) {
+                                    selectedFriendIds.remove(friend.id)
+                                } else {
+                                    selectedFriendIds.add(friend.id)
+                                }
                             }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    enabled = groupName.isNotBlank() && selectedFriendIds.isNotEmpty(),
-                    onClick = {
-                        viewModel.onEvent(
-                            FriendEvent.CreateGroup(groupName, selectedFriendIds.toList())
+                    ) {
+                        Checkbox(
+                            checked = checked,
+                            onCheckedChange = { isChecked ->
+                                if (isChecked) {
+                                    selectedFriendIds.add(friend.id)
+                                } else {
+                                    selectedFriendIds.remove(friend.id)
+                                }
+                            },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = PersonaRed,
+                                uncheckedColor = Color.White,
+                                checkmarkColor = Color.White,
+                            )
                         )
-                        showNewGroupDialog = false
+                        Text(
+                            text = friend.username,
+                            color = Color.White,
+                            fontFamily = OptimaNova,
+                            fontSize = 15.sp,
+                        )
                     }
-                ) {
-                    Text("Create")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showNewGroupDialog = false }) {
-                    Text("Cancel")
                 }
             }
-        )
+        }
     }
 }
 
@@ -172,15 +172,6 @@ fun FriendListScreen(
     onErrorShown: () -> Unit = {}
 ) {
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddClick,
-                containerColor = Color.White,
-                contentColor = Color.Black
-            ) {
-                Icon(Icons.Default.PersonAdd, contentDescription = "Add Friend")
-            }
-        },
         containerColor = Color.Transparent
     ) { padding ->
         Box(
@@ -253,54 +244,26 @@ private fun FriendHeader(
     onAddFriendClick: () -> Unit,
     onNewGroupClick: () -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(start = 8.dp, top = 2.dp, end = 12.dp),
+    PersonaTopBar(
+        title = "FRIENDS",
+        onLogoClick = onBackClick,
     ) {
-        Image(
-            painter = painterResource(R.drawable.logo_im),
-            contentDescription = "Home",
-            modifier = Modifier
-                .height(100.dp)
-                .offset(x = 4.dp, y = (-4).dp)
-                .clickable { onBackClick() }
-        )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier
-                .weight(1f)
-                .padding(top = 12.dp, start = 4.dp),
-        ) {
-            Text(
-                text = "FRIENDS",
-                color = Color.White,
-                fontFamily = OptimaNova,
-                fontSize = 26.sp,
+        IconButton(onClick = onAddFriendClick) {
+            Icon(
+                imageVector = Icons.Default.PersonAdd,
+                contentDescription = "Add Friend",
+                tint = Color.White,
+                modifier = Modifier.size(26.dp)
             )
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onAddFriendClick, modifier = Modifier.padding(top = 8.dp)) {
-                Icon(
-                    imageVector = Icons.Default.PersonAdd,
-                    contentDescription = "Add Friend",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-
-            IconButton(onClick = onNewGroupClick, modifier = Modifier.padding(top = 8.dp)) {
-                Icon(
-                    imageVector = Icons.Default.GroupAdd,
-                    contentDescription = "New Group",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+        IconButton(onClick = onNewGroupClick) {
+            Icon(
+                imageVector = Icons.Default.GroupAdd,
+                contentDescription = "New Group",
+                tint = Color.White,
+                modifier = Modifier.size(26.dp)
+            )
         }
     }
 }
@@ -331,18 +294,11 @@ fun FriendItem(
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                text = friend.username,
-                color = Color.White,
-                fontFamily = OptimaNova,
-                fontSize = 20.sp,
-            )
-            Text(
-                text = friend.email,
-                color = Color.White.copy(alpha = 0.7f),
-                fontSize = 14.sp,
-            )
-        }
+        Text(
+            text = friend.username,
+            color = Color.White,
+            fontFamily = OptimaNova,
+            fontSize = 20.sp,
+        )
     }
 }
