@@ -59,6 +59,18 @@ class ProfileViewModel(
                         }
                 }
             }
+            is ProfileEvent.UploadAvatar -> {
+                viewModelScope.launch {
+                    _uiState.update { it.copy(isUploadingAvatar = true, avatarUploadError = null) }
+                    repository.uploadAvatar(event.imageBytes)
+                        .onSuccess {
+                            _uiState.update { it.copy(isUploadingAvatar = false) }
+                        }
+                        .onFailure { e ->
+                            _uiState.update { it.copy(isUploadingAvatar = false, avatarUploadError = e.message) }
+                        }
+                }
+            }
             is ProfileEvent.ChangePassword -> {
                 viewModelScope.launch {
                     _uiState.update { it.copy(isChangingPassword = true, passwordChangeError = null) }
@@ -88,6 +100,8 @@ data class ProfileUiState(
     val error: String? = null,
     val isSavingProfile: Boolean = false,
     val profileSaveError: String? = null,
+    val isUploadingAvatar: Boolean = false,
+    val avatarUploadError: String? = null,
     val isChangingPassword: Boolean = false,
     val passwordChangeError: String? = null,
     val passwordChangeSuccess: Boolean = false
@@ -95,6 +109,7 @@ data class ProfileUiState(
 
 sealed interface ProfileEvent {
     data class UpdateProfile(val username: String, val email: String, val avatar: String) : ProfileEvent
+    data class UploadAvatar(val imageBytes: ByteArray) : ProfileEvent
     data class ChangePassword(val currentPassword: String, val newPassword: String) : ProfileEvent
     data object PasswordChangeHandled : ProfileEvent
 }

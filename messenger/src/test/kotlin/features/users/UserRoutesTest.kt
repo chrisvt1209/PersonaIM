@@ -149,4 +149,105 @@ class UserRoutesTest {
         }
         assertEquals(HttpStatusCode.OK, loginWithNewPassword.status)
     }
+
+    @Test
+    fun `upload avatar succeeds and sets avatar to custom`() = testApplication {
+        application { testModule(TestDatabase.database) }
+        val client = jsonClient()
+        val joker = client.registerUser("Joker", "joker@persona.dev")
+        val imageBytes = byteArrayOf(1, 2, 3, 4, 5)
+
+        val uploadResponse = client.post("/users/me/avatar") {
+            bearerAuth(joker.token)
+            contentType(ContentType.Image.PNG)
+            setBody(imageBytes)
+        }
+
+        assertEquals(HttpStatusCode.OK, uploadResponse.status)
+        assertEquals("custom", uploadResponse.body<User>().avatar)
+
+        val imageResponse = client.get("/users/${joker.id}/avatar-image") { bearerAuth(joker.token) }
+        assertEquals(HttpStatusCode.OK, imageResponse.status)
+        assertEquals(imageBytes.toList(), imageResponse.body<ByteArray>().toList())
+    }
+
+    @Test
+    fun `upload avatar rejects an unsupported content type`() = testApplication {
+        application { testModule(TestDatabase.database) }
+        val client = jsonClient()
+        val joker = client.registerUser("Joker", "joker@persona.dev")
+
+        val response = client.post("/users/me/avatar") {
+            bearerAuth(joker.token)
+            contentType(ContentType.Application.Json)
+            setBody(byteArrayOf(1, 2, 3))
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `upload avatar rejects an oversized image`() = testApplication {
+        application { testModule(TestDatabase.database) }
+        val client = jsonClient()
+        val joker = client.registerUser("Joker", "joker@persona.dev")
+
+        val response = client.post("/users/me/avatar") {
+            bearerAuth(joker.token)
+            contentType(ContentType.Image.PNG)
+            setBody(ByteArray(512 * 1024 + 1))
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `avatar image endpoint returns not found when user has no custom avatar`() = testApplication {
+        application { testModule(TestDatabase.database) }
+        val client = jsonClient()
+        val joker = client.registerUser("Joker", "joker@persona.dev")
+
+        val response = client.get("/users/${joker.id}/avatar-image") { bearerAuth(joker.token) }
+
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `avatar endpoints require authentication`() = testApplication {
+        application { testModule(TestDatabase.database) }
+        val client = jsonClient()
+        val joker = client.registerUser("Joker", "joker@persona.dev")
+
+        val uploadResponse = client.post("/users/me/avatar") {
+            contentType(ContentType.Image.PNG)
+            setBody(byteArrayOf(1, 2, 3))
+        }
+        assertEquals(HttpStatusCode.Unauthorized, uploadResponse.status)
+
+        val imageResponse = client.get("/users/${joker.id}/avatar-image")
+        assertEquals(HttpStatusCode.Unauthorized, imageResponse.status)
+    }
+
+    @Test
+    fun `switching back to a preset avatar clears the stored custom image`() = testApplication {
+        application { testModule(TestDatabase.database) }
+        val client = jsonClient()
+        val joker = client.registerUser("Joker", "joker@persona.dev")
+
+        client.post("/users/me/avatar") {
+            bearerAuth(joker.token)
+            contentType(ContentType.Image.PNG)
+            setBody(byteArrayOf(1, 2, 3))
+        }
+
+        val response = client.put("/users/me") {
+            bearerAuth(joker.token)
+            contentType(ContentType.Application.Json)
+            setBody(UpdateProfileRequest("Joker", "joker@persona.dev", "ryuji"))
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+
+        val imageResponse = client.get("/users/${joker.id}/avatar-image") { bearerAuth(joker.token) }
+        assertEquals(HttpStatusCode.NotFound, imageResponse.status)
+    }
 }

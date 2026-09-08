@@ -8,6 +8,7 @@ import features.friends.FriendRepository
 import features.friends.FriendService
 import features.messages.MessageRepository
 import features.messages.MessageService
+import features.users.AvatarStorage
 import features.users.UserRepository
 import features.users.UserService
 import io.ktor.server.application.Application
@@ -17,15 +18,17 @@ import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import org.ktorm.database.Database
+import java.nio.file.Path
 
 const val JWT_SECRET_QUALIFIER = "jwtSecret"
 
-private fun appModule(database: Database) = module {
+private fun appModule(database: Database, avatarStorageDir: Path) = module {
     single<Database> { database }
     single(named(JWT_SECRET_QUALIFIER)) { resolveJwtSecret() }
 
     single { UserRepository(get()) }
-    single { UserService(get()) }
+    single { AvatarStorage(avatarStorageDir) }
+    single { UserService(get(), get()) }
     single { ConversationRepository(get()) }
     single { ConversationService(get()) }
     single { MessageRepository(get()) }
@@ -36,9 +39,12 @@ private fun appModule(database: Database) = module {
     single { WebSocketManager() }
 }
 
-fun Application.configureDependencyInjection(database: Database = DatabaseFactory.create()) {
+fun Application.configureDependencyInjection(
+    database: Database = DatabaseFactory.create(),
+    avatarStorageDir: Path = Path.of("storage", "avatars")
+) {
     install(Koin) {
         slf4jLogger()
-        modules(appModule(database))
+        modules(appModule(database, avatarStorageDir))
     }
 }

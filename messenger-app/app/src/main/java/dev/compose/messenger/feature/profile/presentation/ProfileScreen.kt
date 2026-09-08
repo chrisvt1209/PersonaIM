@@ -1,9 +1,18 @@
 package dev.compose.messenger.feature.profile.presentation
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,18 +35,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import dev.compose.messenger.core.designsystem.component.AvatarCropDialog
 import dev.compose.messenger.core.designsystem.component.BackgroundParticles
 import dev.compose.messenger.R
 import dev.compose.messenger.core.common.model.AppBackgroundColor
@@ -49,13 +64,22 @@ import dev.compose.messenger.core.designsystem.component.PersonaTopBar
 import dev.compose.messenger.core.designsystem.theme.OptimaNova
 import dev.compose.messenger.core.designsystem.theme.PersonaRed
 import dev.compose.messenger.core.common.model.Avatar
+import dev.compose.messenger.core.common.model.rememberAvatarPainter
 import dev.compose.messenger.core.designsystem.util.personaPanelBackground
+import dev.compose.messenger.core.designsystem.util.stylizeAvatar
 import dev.compose.messenger.feature.profile.domain.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import dev.compose.messenger.core.designsystem.component.BackgroundColorMenu
@@ -73,12 +97,53 @@ fun ProfileRoute(
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     var showEditDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
+    var pendingCaptureUri by remember { mutableStateOf<Uri?>(null) }
+    var cropSourceBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var avatarPickError by remember { mutableStateOf<String?>(null) }
+
+    fun openCropDialog(uri: Uri) {
+        coroutineScope.launch {
+            val bitmap = withContext(Dispatchers.IO) { decodeSampledBitmap(context, uri) }
+            if (bitmap != null) {
+                cropSourceBitmap = bitmap
+            } else {
+                avatarPickError = "Could not read that image"
+            }
+        }
+    }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        val uri = pendingCaptureUri
+        pendingCaptureUri = null
+        if (success && uri != null) {
+            openCropDialog(uri)
+        }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            val uri = createAvatarCaptureUri(context)
+            pendingCaptureUri = uri
+            takePictureLauncher.launch(uri)
+        } else {
+            avatarPickError = "Camera permission is required to take a photo"
+        }
+    }
+
+    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            openCropDialog(uri)
+        }
+    }
 
     ProfileScreen(
         uiState = uiState,
+        avatarError = avatarPickError ?: uiState.avatarUploadError,
         onLogout = onLogout,
         onBackClick = onBackClick,
         onEditClick = { showEditDialog = true },
@@ -99,7 +164,44 @@ fun ProfileRoute(
                 viewModel.onEvent(ProfileEvent.UpdateProfile(username, email, avatar))
             },
             onDismiss = { showEditDialog = false },
-            didSucceed = !uiState.isSavingProfile && uiState.profileSaveError == null
+            didSucceed = !uiState.isSavingProfile && uiState.profileSaveError == null,
+            onCameraClick = {
+                avatarPickError = null
+                val hasPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+                    PackageManager.PERMISSION_GRANTED
+                if (hasPermission) {
+                    val uri = createAvatarCaptureUri(context)
+                    pendingCaptureUri = uri
+                    takePictureLauncher.launch(uri)
+                } else {
+                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            },
+            onGalleryClick = {
+                avatarPickError = null
+                pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
+        )
+    }
+
+    cropSourceBitmap?.let { bitmap ->
+        AvatarCropDialog(
+            sourceBitmap = bitmap,
+            onConfirm = { cropped ->
+                cropSourceBitmap = null
+                showEditDialog = false
+                coroutineScope.launch {
+                    val imageBytes = withContext(Dispatchers.Default) {
+                        val stylized = stylizeAvatar(cropped)
+                        ByteArrayOutputStream().use { stream ->
+                            stylized.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                            stream.toByteArray()
+                        }
+                    }
+                    viewModel.onEvent(ProfileEvent.UploadAvatar(imageBytes))
+                }
+            },
+            onCancel = { cropSourceBitmap = null }
         )
     }
 
@@ -129,7 +231,8 @@ fun ProfileScreen(
     season: Season,
     onSeasonChange: (Season) -> Unit,
     backgroundColor: AppBackgroundColor,
-    onBackgroundColorChange: (AppBackgroundColor) -> Unit
+    onBackgroundColorChange: (AppBackgroundColor) -> Unit,
+    avatarError: String? = null
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
@@ -151,10 +254,18 @@ fun ProfileScreen(
                 CircularProgressIndicator(color = Color.White)
             } else if (uiState.user != null) {
                 Image(
-                    painter = painterResource(Avatar.fromKey(uiState.user.avatar).drawableRes),
+                    painter = rememberAvatarPainter(uiState.user.id, uiState.user.avatar),
                     contentDescription = null,
                     modifier = Modifier.size(160.dp)
                 )
+
+                if (uiState.isUploadingAvatar) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(text = "Uploading avatar...", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+                } else if (avatarError != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(text = avatarError, color = Color.Red, fontSize = 12.sp)
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -286,7 +397,9 @@ private fun EditProfileDialog(
     error: String?,
     onSave: (username: String, email: String, avatar: String) -> Unit,
     onDismiss: () -> Unit,
-    didSucceed: Boolean
+    didSucceed: Boolean,
+    onCameraClick: () -> Unit,
+    onGalleryClick: () -> Unit
 ) {
     var username by remember { mutableStateOf(user.username) }
     var email by remember { mutableStateOf(user.email) }
@@ -309,7 +422,10 @@ private fun EditProfileDialog(
             onSave(username, email, avatar)
         },
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState())
+        ) {
             Avatar.entries.forEach { option ->
                 Image(
                     painter = painterResource(option.drawableRes),
@@ -324,6 +440,30 @@ private fun EditProfileDialog(
                         )
                         .clickable { avatar = option.key }
                 )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.08f))
+                    .border(width = 1.dp, color = PersonaRed, shape = CircleShape)
+                    .clickable { onCameraClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = Icons.Default.CameraAlt, contentDescription = "Take photo", tint = Color.White)
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.08f))
+                    .border(width = 1.dp, color = PersonaRed, shape = CircleShape)
+                    .clickable { onGalleryClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = "Choose from gallery", tint = Color.White)
             }
         }
 
@@ -422,4 +562,32 @@ private fun ChangePasswordDialog(
             Text(error, color = Color.Red, fontSize = 13.sp)
         }
     }
+}
+
+private const val MAX_AVATAR_SOURCE_DIMENSION = 1024
+
+/** Decodes [uri] downsampled so its longest side is at most [MAX_AVATAR_SOURCE_DIMENSION], to avoid OOM on large camera photos. */
+private fun decodeSampledBitmap(context: android.content.Context, uri: Uri): Bitmap? {
+    val resolver = context.contentResolver
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    val boundsStream = resolver.openInputStream(uri) ?: return null
+    boundsStream.use { BitmapFactory.decodeStream(it, null, bounds) }
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+    var sampleSize = 1
+    while (bounds.outWidth / sampleSize > MAX_AVATAR_SOURCE_DIMENSION ||
+        bounds.outHeight / sampleSize > MAX_AVATAR_SOURCE_DIMENSION
+    ) {
+        sampleSize *= 2
+    }
+
+    val decodeOptions = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+    return resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, decodeOptions) }
+}
+
+/** Creates a fresh [FileProvider]-backed content [Uri] for [ActivityResultContracts.TakePicture] to write a captured photo into. */
+private fun createAvatarCaptureUri(context: android.content.Context): Uri {
+    val directory = File(context.cacheDir, "avatar_captures").apply { mkdirs() }
+    val file = File.createTempFile("avatar_", ".jpg", directory)
+    return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 }

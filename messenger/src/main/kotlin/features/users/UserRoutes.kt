@@ -47,6 +47,24 @@ fun Route.userRoutes(
             call.respond(HttpStatusCode.OK)
         }
 
+        post("/users/me/avatar") {
+            val userId = call.userId()
+            val contentType = call.request.contentType()
+            val bytes = call.receive<ByteArray>()
+
+            val user = service.uploadAvatar(userId, bytes, contentType)
+            call.respond(user)
+        }
+
+        get("/users/{id}/avatar-image") {
+            val id = call.parameters["id"]?.toLongOrNull()
+                ?: throw BadRequestException("Invalid user id")
+
+            val bytes = service.getAvatarImage(id)
+            call.response.headers.append(HttpHeaders.CacheControl, "no-store")
+            call.respondBytes(bytes, ContentType.Image.PNG)
+        }
+
         get("/users/{id}") {
             val id = call.parameters["id"]?.toLongOrNull()
                 ?: throw BadRequestException("Invalid user id")

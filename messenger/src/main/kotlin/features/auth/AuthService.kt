@@ -44,7 +44,8 @@ class AuthService(
 
     private fun generateUid(): String {
         val chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-        return (1..8).map { chars.random() }.joinToString("")
+        val code = (1..8).map { chars.random() }.joinToString("")
+        return "${code.substring(0, 4)}-${code.substring(4, 8)}"
     }
 
     fun login(request: LoginRequest): AuthResponse {

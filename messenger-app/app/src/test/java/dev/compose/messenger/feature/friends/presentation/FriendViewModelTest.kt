@@ -58,6 +58,7 @@ private class FakeProfileRepository(
 ) : ProfileRepository {
     override fun getCurrentUser(): Flow<User?> = MutableStateFlow(null)
     override suspend fun updateProfile(username: String, email: String, avatar: String): Result<Unit> = Result.success(Unit)
+    override suspend fun uploadAvatar(imageBytes: ByteArray): Result<Unit> = Result.success(Unit)
     override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = Result.success(Unit)
     override suspend fun syncProfile(): Result<Unit> = Result.success(Unit)
     override suspend fun getUser(id: Long): Result<User> = userResult(id)

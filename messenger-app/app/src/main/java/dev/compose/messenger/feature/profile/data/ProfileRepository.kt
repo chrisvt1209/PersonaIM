@@ -18,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 interface ProfileRepository {
     fun getCurrentUser(): Flow<User?>
     suspend fun updateProfile(username: String, email: String, avatar: String): Result<Unit>
+    suspend fun uploadAvatar(imageBytes: ByteArray): Result<Unit>
     suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
     suspend fun syncProfile(): Result<Unit>
     suspend fun getUser(id: Long): Result<User>
@@ -54,6 +55,16 @@ class ProfileRepositoryImpl(
     override suspend fun updateProfile(username: String, email: String, avatar: String): Result<Unit> {
         return try {
             val dto = api.updateProfile(UpdateProfileRequest(username, email, avatar))
+            dao.insertUser(dto.toEntity())
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.toUserMessage()))
+        }
+    }
+
+    override suspend fun uploadAvatar(imageBytes: ByteArray): Result<Unit> {
+        return try {
+            val dto = api.uploadAvatar(imageBytes)
             dao.insertUser(dto.toEntity())
             Result.success(Unit)
         } catch (e: Exception) {

@@ -15,9 +15,9 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -47,7 +47,7 @@ fun randomAvatarColor(key: String): Color {
  */
 @Composable
 fun PersonaAvatar(
-    drawableRes: Int,
+    painter: Painter,
     backgroundColor: Color,
     size: Dp,
     modifier: Modifier = Modifier,
@@ -71,7 +71,7 @@ fun PersonaAvatar(
                 .clip(with(density) { avatarClipBox() })
         ) {
             Image(
-                painter = painterResource(drawableRes),
+                painter = painter,
                 contentDescription = null,
                 modifier = Modifier
                     .size(80.dp)

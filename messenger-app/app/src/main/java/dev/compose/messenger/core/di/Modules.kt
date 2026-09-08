@@ -5,6 +5,7 @@ import dev.compose.messenger.MainViewModel
 import dev.compose.messenger.core.database.MessengerDatabase
 import dev.compose.messenger.core.datastore.PreferencesManager
 import dev.compose.messenger.core.network.WebSocketService
+import dev.compose.messenger.core.network.createAvatarImageLoader
 import dev.compose.messenger.core.network.api.AuthApi
 import dev.compose.messenger.core.network.api.ConversationApi
 import dev.compose.messenger.core.network.api.FriendApi
@@ -40,6 +41,7 @@ val coreModule = module {
     single { get<MessengerDatabase>().friendDao() }
 
     single { createHttpClient(get()) }
+    single { createAvatarImageLoader(androidContext(), get()) }
     single { WebSocketService(get(), get()) }
     single { AuthApi(get()) }
     single { ConversationApi(get()) }

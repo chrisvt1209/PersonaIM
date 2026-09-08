@@ -23,6 +23,11 @@ services:
       DATABASE_PASSWORD: postgres
     ports:
       - "8080:8080"
+    volumes:
+      - avatar-storage:/app/storage
     depends_on:
       db:
         condition: service_healthy
+
+volumes:
+  avatar-storage:

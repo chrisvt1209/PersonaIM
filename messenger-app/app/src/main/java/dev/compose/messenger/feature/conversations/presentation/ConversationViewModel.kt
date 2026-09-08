@@ -26,7 +26,9 @@ class ConversationViewModel(
         loadInvites()
         viewModelScope.launch {
             profileRepository.getCurrentUser().collect { user ->
-                _uiState.update { it.copy(userAvatar = user?.avatar ?: Avatar.Default.key) }
+                _uiState.update {
+                    it.copy(userId = user?.id ?: 0L, userAvatar = user?.avatar ?: Avatar.Default.key)
+                }
             }
         }
     }
@@ -121,6 +123,7 @@ data class ConversationUiState(
     val conversations: List<Conversation> = emptyList(),
     val isLoading: Boolean = false,
     val searchQuery: String = "",
+    val userId: Long = 0L,
     val userAvatar: String = Avatar.Default.key,
     val participantAvatars: Map<Long, String> = emptyMap(),
     val invites: List<GroupInvite> = emptyList(),

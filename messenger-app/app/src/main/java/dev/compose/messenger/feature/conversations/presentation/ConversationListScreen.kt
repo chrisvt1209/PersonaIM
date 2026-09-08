@@ -46,11 +46,10 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
-import dev.compose.messenger.core.common.model.Avatar
+import dev.compose.messenger.core.common.model.rememberAvatarPainter
 import dev.compose.messenger.core.designsystem.component.PersonaAvatar
 import dev.compose.messenger.core.designsystem.component.PersonaTopBar
 import dev.compose.messenger.core.designsystem.component.randomAvatarColor
@@ -177,6 +176,7 @@ fun ConversationListScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             PersonaListHeader(
+                userId = uiState.userId,
                 userAvatar = uiState.userAvatar,
                 inviteCount = uiState.invites.size,
                 onProfileClick = onProfileClick,
@@ -248,6 +248,7 @@ private fun ErrorBanner(
 
 @Composable
 private fun PersonaListHeader(
+    userId: Long,
     userAvatar: String,
     inviteCount: Int,
     onProfileClick: () -> Unit,
@@ -295,7 +296,7 @@ private fun PersonaListHeader(
         }
 
         Image(
-            painter = painterResource(Avatar.fromKey(userAvatar).drawableRes),
+            painter = rememberAvatarPainter(userId, userAvatar),
             contentDescription = "Profile",
             modifier = Modifier
                 .height(44.dp)
@@ -466,7 +467,7 @@ private fun ParticipantAvatars(
             val avatarKey = avatars[userId].orEmpty()
 
             PersonaAvatar(
-                drawableRes = Avatar.fromKey(avatarKey).drawableRes,
+                painter = rememberAvatarPainter(userId, avatarKey),
                 backgroundColor = randomAvatarColor(avatarKey),
                 size = AvatarChipSize,
                 modifier = Modifier

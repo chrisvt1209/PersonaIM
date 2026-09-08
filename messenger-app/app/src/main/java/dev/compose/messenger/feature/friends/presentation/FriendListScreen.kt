@@ -19,7 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.compose.messenger.R
-import dev.compose.messenger.core.common.model.Avatar
+import dev.compose.messenger.core.common.model.rememberAvatarPainter
 import dev.compose.messenger.core.designsystem.component.PersonaAvatar
 import dev.compose.messenger.core.designsystem.component.PersonaDialog
 import dev.compose.messenger.core.designsystem.component.PersonaTextField
@@ -287,7 +287,7 @@ fun FriendItem(
             .padding(horizontal = 18.dp, vertical = 16.dp),
     ) {
         PersonaAvatar(
-            drawableRes = Avatar.fromKey(avatarKey.orEmpty()).drawableRes,
+            painter = rememberAvatarPainter(friend.id, avatarKey.orEmpty()),
             backgroundColor = randomAvatarColor(avatarKey.orEmpty()),
             size = 64.dp,
         )

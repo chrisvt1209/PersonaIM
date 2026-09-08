@@ -70,6 +70,10 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.websockets)
 
+    // Coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
     // Datastore
     implementation(libs.androidx.datastore.preferences)
 

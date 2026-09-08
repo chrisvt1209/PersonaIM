@@ -4,8 +4,11 @@ import dev.compose.messenger.feature.profile.domain.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -50,5 +53,12 @@ class UserApi(private val client: HttpClient) {
 
     suspend fun getUser(id: Long): UserDto {
         return client.get("users/$id").body()
+    }
+
+    suspend fun uploadAvatar(imageBytes: ByteArray): UserDto {
+        return client.post("users/me/avatar") {
+            contentType(ContentType.Image.PNG)
+            setBody(imageBytes)
+        }.body()
     }
 }

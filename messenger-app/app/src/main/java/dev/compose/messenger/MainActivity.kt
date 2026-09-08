@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -17,10 +18,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import coil3.ImageLoader
 import dev.compose.messenger.core.designsystem.component.BackgroundParticles
 import dev.compose.messenger.core.designsystem.theme.PersonaTheme
 import dev.compose.messenger.core.navigation.MessengerNavHost
+import dev.compose.messenger.core.network.LocalAvatarImageLoader
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,29 +37,31 @@ class MainActivity : ComponentActivity() {
             val backgroundColor by viewModel.backgroundColor.collectAsState()
 
             PersonaTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(color = backgroundColor.color)
-                ) {
-                    BackgroundParticles(season)
-
-                    Image(
-                        painter = painterResource(R.drawable.bg_splatter_background),
-                        contentDescription = null,
-                        contentScale = ContentScale.FillWidth,
+                CompositionLocalProvider(LocalAvatarImageLoader provides koinInject<ImageLoader>()) {
+                    Box(
                         modifier = Modifier
-                            .statusBarsPadding()
-                            .offset(y = (-16).dp)
-                    )
+                            .fillMaxSize()
+                            .background(color = backgroundColor.color)
+                    ) {
+                        BackgroundParticles(season)
 
-                    MessengerNavHost(
-                        season = season,
-                        onSeasonChange = viewModel::changeSeason,
-                        backgroundColor = backgroundColor,
-                        onBackgroundColorChange = viewModel::changeBackgroundColor,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                        Image(
+                            painter = painterResource(R.drawable.bg_splatter_background),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .statusBarsPadding()
+                                .offset(y = (-16).dp)
+                        )
+
+                        MessengerNavHost(
+                            season = season,
+                            onSeasonChange = viewModel::changeSeason,
+                            backgroundColor = backgroundColor,
+                            onBackgroundColorChange = viewModel::changeBackgroundColor,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }

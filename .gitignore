@@ -134,3 +134,6 @@ fabric.properties
 *.ear
 *.log
 **/.kotlin/
+
+# Uploaded avatar images (backend, file-based storage)
+messenger/storage/

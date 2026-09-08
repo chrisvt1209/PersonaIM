@@ -3,13 +3,15 @@ package features.users
 import org.ktorm.database.Database
 import org.ktorm.dsl.*
 
+private val ProfileColumns = listOf(Users.id, Users.username, Users.email, Users.uid, Users.avatar)
+
 class UserRepository(
     private val database: Database
 ) {
     fun findById(id: Long): User? {
         return database
             .from(Users)
-            .select()
+            .select(ProfileColumns)
             .where { Users.id eq id }
             .map {
                 User(
@@ -26,7 +28,7 @@ class UserRepository(
     fun findByEmail(email: String): User? {
         return database
             .from(Users)
-            .select()
+            .select(ProfileColumns)
             .where { Users.email eq email }
             .map {
                 User(
@@ -43,7 +45,7 @@ class UserRepository(
     fun findByUid(uid: String): User? {
         return database
             .from(Users)
-            .select()
+            .select(ProfileColumns)
             .where { Users.uid eq uid }
             .map {
                 User(
@@ -88,6 +90,15 @@ class UserRepository(
             set(it.username, username)
             set(it.email, email)
             set(it.avatar, avatar)
+            where { it.id eq userId }
+        }
+
+        return findById(userId)
+    }
+
+    fun markAvatarCustom(userId: Long): User? {
+        database.update(Users) {
+            set(it.avatar, "custom")
             where { it.id eq userId }
         }
 

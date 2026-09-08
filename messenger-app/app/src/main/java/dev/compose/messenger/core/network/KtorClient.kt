@@ -61,8 +61,8 @@ fun createHttpClient(preferencesManager: PreferencesManager): HttpClient {
         defaultRequest {
             url {
                 protocol = URLProtocol.HTTP
-                host = "10.0.2.2" // Localhost from Android emulator
-                port = 8080
+                host = NetworkConfig.HOST
+                port = NetworkConfig.PORT
             }
             contentType(ContentType.Application.Json)
         }
